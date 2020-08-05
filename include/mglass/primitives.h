@@ -1,8 +1,9 @@
 #ifndef MAGNIFYING_GLASS_PRIMITIVES_H
 #define MAGNIFYING_GLASS_PRIMITIVES_H
 
-#include <cstdint>  // std::int32_t, std::uint32_t
-#include <cstddef>  // std::size_t
+#include <cstdint>      // std::int32_t, std::uint32_t
+#include <cstddef>      // std::size_t
+#include <type_traits>  // std::is_same_v
 
 namespace mglass
 {
@@ -14,6 +15,9 @@ namespace mglass
     template<typename Numerical>
     struct Point
     {
+        static_assert(std::is_arithmetic_v<Numerical>, "non arithmetic types are not allowed here");
+        static_assert(!std::is_same_v<Numerical, bool>, "bool is not allowed here");
+
         Numerical x;
         Numerical y;
     };

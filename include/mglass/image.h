@@ -1,9 +1,10 @@
 #ifndef MAGNIFYING_GLASS_IMAGE_H
 #define MAGNIFYING_GLASS_IMAGE_H
 
-#include <cstdint>      // std::uint8_t
-#include <cstddef>      // std::size_t
-#include <iosfwd>       // std::istream
+#include "mglass/primitives.h"  // size_type
+#include <cstdint>              // std::uint8_t
+#include <cstddef>              // std::size_t
+#include <iosfwd>               // std::istream
 
 namespace mglass
 {
@@ -19,18 +20,19 @@ namespace mglass
     class Image
     {
     public: // nested types
-        using size_type = std::size_t;
 
     public: // ctors/dtor
         template<typename BytesInputIt>
         static Image fromPNG(BytesInputIt pngBegin, BytesInputIt pngEnd);
 
     public: // modifiers
-
+        // content of the image is undefined after sizes changing
+        // no re-allocations will be performed if (getWidth() * getHeight()) >= (newWidth * newHeight)
+        void setSize(mglass::size_type newWidth, mglass::size_type newHeight);
 
     public: // getters
-        size_type getWidth() const noexcept;
-        size_type getHeight() const noexcept;
+        mglass::size_type getWidth() const noexcept;
+        mglass::size_type getHeight() const noexcept;
     };
 }
 
