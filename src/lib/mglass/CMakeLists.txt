@@ -8,3 +8,9 @@ add_library(mglass STATIC
             "mglass.cpp")
 
 enable_extra_compiler_warnings(mglass)
+
+target_include_directories(mglass
+                           PRIVATE "${magnifying-glass_SOURCE_DIR}/third-party/lodepng")
+
+target_link_libraries(mglass
+                      PRIVATE lodepng)
