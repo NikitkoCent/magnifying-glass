@@ -22,6 +22,10 @@ namespace mglass
         Numerical y;
     };
 
+    template<typename T>
+    Point(T, T) -> Point<T>;
+
+
     template<typename To, typename From>
     Point<To> pointCast(const Point<From> point)
     {

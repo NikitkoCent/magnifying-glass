@@ -15,6 +15,9 @@ namespace mglass
         virtual mglass::float_type getWidth() const noexcept = 0;
         virtual mglass::float_type getHeight() const noexcept = 0;
 
+        // returns coordinates of `point` after resizing the shape by `scaleFactor` times
+        // `scaleFactor` must be within the (0; +inf) range; undefined behavior otherwise
+        // `point` must be inside the shape; undefined behavior otherwise (TODO: make the condition more friendly)
         virtual Point<mglass::float_type> getPointAtScaled(mglass::float_type scaleFactor, Point<mglass::float_type> point) const = 0;
 
         virtual void rasterizeOnto(const Rect& rect, std::function<void(Point<mglass::int_type>, mglass::float_type)> consumer) const = 0;
@@ -30,7 +33,7 @@ namespace mglass
         const auto widthFloat = std::ceil(shape.getWidth());
         const auto heightFloat = std::ceil(shape.getHeight());
 
-        assert( ((widthFloat > 0) && (heightFloat > 0)) );
+        assert( ((widthFloat >= 0) && (heightFloat >= 0)) );
 
         auto leftTopFloat = shape.getCenter();
         leftTopFloat.x = std::floor(leftTopFloat.x - shape.getWidth() / 2);
