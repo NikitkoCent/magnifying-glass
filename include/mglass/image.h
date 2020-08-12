@@ -26,13 +26,19 @@ namespace mglass
         static Image fromPNG(BytesInputIt pngBegin, BytesInputIt pngEnd);
 
     public: // modifiers
-        // content of the image is undefined after sizes changing
-        // no re-allocations will be performed if (getWidth() * getHeight()) >= (newWidth * newHeight)
+        // content of the image is undefined after resizing
+        // no momery re-allocations will be performed if (getWidth() * getHeight()) >= (newWidth * newHeight)
         void setSize(mglass::size_type newWidth, mglass::size_type newHeight);
+
+        void setPixelAt(mglass::size_type x, mglass::size_type y, ARGB color);
+
+        void fill(ARGB color);
 
     public: // getters
         mglass::size_type getWidth() const noexcept;
         mglass::size_type getHeight() const noexcept;
+
+        ARGB getPixelAt(mglass::size_type x, mglass::size_type y) const;
     };
 }
 

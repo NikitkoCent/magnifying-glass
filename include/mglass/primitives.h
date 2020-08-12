@@ -22,6 +22,12 @@ namespace mglass
         Numerical y;
     };
 
+    template<typename To, typename From>
+    Point<To> pointCast(const Point<From> point)
+    {
+        return { static_cast<To>(point.x), static_cast<To>(point.y) };
+    }
+
 
     struct Rect
     {
