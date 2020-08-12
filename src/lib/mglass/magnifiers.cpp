@@ -36,10 +36,10 @@ namespace mglass::magnifiers
                 const auto srcPixel = imageSrc.getPixelAt(srcX, srcY);
 
                 assert( (rasterizePoint.x >= shapeRect.topLeft.x) );
-                assert( (rasterizePoint.y >= shapeRect.topLeft.y) );
+                assert( (rasterizePoint.y <= shapeRect.topLeft.y) );
 
                 const auto dstX = static_cast<mglass::size_type>(rasterizePoint.x - shapeRect.topLeft.x);
-                const auto dstY = static_cast<mglass::size_type>(rasterizePoint.y - shapeRect.topLeft.y);
+                const auto dstY = static_cast<mglass::size_type>(shapeRect.topLeft.y - rasterizePoint.y);
 
                 imageDst.setPixelAt(dstX, dstY, srcPixel);
         });
