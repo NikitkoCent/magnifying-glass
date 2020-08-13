@@ -4,7 +4,6 @@
 #include "mglass/primitives.h"  // Point, Rect
 #include <functional>           // std::function
 #include <cmath>                // std::floor
-#include <cassert>              // assert
 
 namespace mglass
 {
@@ -30,18 +29,19 @@ namespace mglass
 
     inline Rect getShapeRect(const Shape& shape)
     {
-        const auto widthFloat = std::ceil(shape.getWidth());
-        const auto heightFloat = std::ceil(shape.getHeight());
+        const auto center = shape.getCenter();
+        const auto halfWidth = shape.getWidth() / 2;
+        const auto halfHeight = shape.getHeight() / 2;
 
-        assert( ((widthFloat >= 0) && (heightFloat >= 0)) );
+        const auto leftTopX = static_cast<mglass::int_type>(std::floor(center.x - halfWidth));
+        const auto rightBottomX = static_cast<mglass::int_type>(std::ceil(center.x + halfWidth));
+        const mglass::size_type rectWidth = (rightBottomX < leftTopX) ? 0 : (rightBottomX - leftTopX + 1);
 
-        auto leftTopFloat = shape.getCenter();
-        leftTopFloat.x = std::floor(leftTopFloat.x - shape.getWidth() / 2);
-        leftTopFloat.y = std::floor(leftTopFloat.y - shape.getHeight() / 2);
+        const auto leftTopY = static_cast<mglass::int_type>(std::ceil(center.y + halfHeight));
+        const auto rightBottomY = static_cast<mglass::int_type>(std::floor(center.y - halfHeight));
+        const mglass::size_type rectHeight = (leftTopY < rightBottomY) ? 0 : (leftTopY - rightBottomY + 1);
 
-        const auto leftTop = pointCast<mglass::int_type>(leftTopFloat);
-
-        return {leftTop, static_cast<mglass::size_type>(widthFloat), static_cast<mglass::size_type>(heightFloat)};
+        return { {leftTopX, leftTopY}, rectWidth, rectHeight};
     }
 }
 
