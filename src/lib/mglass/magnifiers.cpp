@@ -15,9 +15,9 @@ namespace mglass::magnifiers
         const auto shapeRect = getShapeRect(shape);
 
         imageDst.setSize(shapeRect.width, shapeRect.height);
-        imageDst.fill({0, 0, 0, 0});
+        imageDst.fill(ARGB::transparent());
 
-        const Rect imageRect{imageTopLeft, shapeRect.width, shapeRect.height};
+        const Rect imageRect{imageTopLeft, imageSrc.getWidth(), imageSrc.getWidth()};
 
         shape.rasterizeOnto(
             imageRect,
@@ -28,11 +28,16 @@ namespace mglass::magnifiers
 
                 auto srcPointSigned = pointCast<mglass::int_type>(srcPointFloat);
                 srcPointSigned.x -= imageTopLeft.x;
-                srcPointSigned.y -= imageTopLeft.y;
+                srcPointSigned.y = imageTopLeft.y - srcPointSigned.y;
 
-                assert( ((srcPointSigned.x >= 0) && (srcPointSigned.y >= 0)) );
+                if ((srcPointSigned.x < 0) || (srcPointSigned.y < 0))
+                    return;
 
                 const auto [srcX, srcY] = pointCast<mglass::size_type>(srcPointSigned);
+
+                if ((srcX >= imageSrc.getWidth()) || (srcY >= imageSrc.getHeight()))
+                    return;
+
                 const auto srcPixel = imageSrc.getPixelAt(srcX, srcY);
 
                 assert( (rasterizePoint.x >= shapeRect.topLeft.x) );
