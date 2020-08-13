@@ -7,7 +7,8 @@ add_library(mglass STATIC
             "${magnifying-glass_SOURCE_DIR}/include/mglass/magnifiers.h"
             "mglass.cpp"
             "magnifiers.cpp"
-            "shapes.cpp")
+            "shapes.cpp"
+            "image.cpp")
 
 enable_extra_compiler_warnings(mglass)
 
