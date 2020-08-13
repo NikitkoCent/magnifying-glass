@@ -65,8 +65,8 @@ namespace mglass::shapes
         mglass::float_type scaleFactor,
         Point<mglass::float_type> point) const
     {
-        const auto dx = center_.x - point.x;
-        const auto dy = center_.y - point.y;
+        const auto dx = point.x - center_.x;
+        const auto dy = point.y - center_.y;
 
         return { center_.x + dx / scaleFactor, center_.y + dy / scaleFactor};
     }
@@ -83,8 +83,8 @@ namespace mglass::shapes
         if ((rect.width < 1) || (rect.height < 1))
             return;
 
-        const Rect shapeRect = getShapeRect(*this);
-        if ((shapeRect.width < 1) || (shapeRect.height < 1))
+        const Rect thisRect = getShapeRect(*this);
+        if ((thisRect.width < 1) || (thisRect.height < 1))
             return;
 
         const auto rectXMin = rect.topLeft.x;
@@ -101,15 +101,15 @@ namespace mglass::shapes
         // b^2 == (getHeight() / 2) ^ 2
         const auto b2 = (getHeight() * getHeight()) / 4;
 
-        const auto xStart = shapeRect.topLeft.x;
-        const auto xEnd = shapeRect.topLeft.x + static_cast<mglass::int_type>(shapeRect.width);
+        const auto xStart = thisRect.topLeft.x;
+        const auto xEnd = thisRect.topLeft.x + static_cast<mglass::int_type>(thisRect.width);
 
-        const auto yStart = shapeRect.topLeft.y;
-        const auto yEnd = shapeRect.topLeft.y - static_cast<mglass::int_type>(shapeRect.height);
+        const auto yStart = thisRect.topLeft.y;
+        const auto yEnd = thisRect.topLeft.y - static_cast<mglass::int_type>(thisRect.height);
 
-        for (mglass::int_type y = yStart; y > yEnd; --y)
+        for (mglass::int_type yUnaligned = yStart; yUnaligned > yEnd; --yUnaligned)
         {
-            if ((y < rectYMin) || (y > rectYMax))
+            if ((yUnaligned < rectYMin) || (yUnaligned > rectYMax))
                 continue;
 
             // b^2 * x^2 + a^2 * y^2 <= a^2 * b^2
@@ -120,19 +120,24 @@ namespace mglass::shapes
             // equals to
             // b^2 * x^2 <= a^2(b^2 - y^2)
 
+            const auto y = static_cast<mglass::float_type>(yUnaligned) - center_.y;
             const auto y2 = static_cast<mglass::float_type>(y * y);
+
             const auto rightPart = a2 * (b2 - y2);
 
-            for (mglass::int_type x = xStart; x < xEnd; ++x)
+            for (mglass::int_type xUnaligned = xStart; xUnaligned < xEnd; ++xUnaligned)
             {
-                if ((x < rectXMin) || (x > rectXMax))
+                if ((xUnaligned < rectXMin) || (xUnaligned > rectXMax))
                     continue;
 
+                const auto x = static_cast<mglass::float_type>(xUnaligned) - center_.x;
+
                 const auto b2x2 = b2 * static_cast<mglass::float_type>(x * x);
+
                 if (b2x2 <= rightPart)
                 {
                     // TODO: compute the second parameter of the consumer
-                    consumer({x, y}, 1);
+                    consumer({xUnaligned, yUnaligned}, 1);
                 }
             }
         }
