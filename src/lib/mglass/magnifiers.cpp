@@ -12,6 +12,8 @@ namespace mglass::magnifiers
         Point<mglass::int_type> imageTopLeft,
         Image& imageDst)
     {
+        //TODO: fix cases when shape is not fully inside imageRect
+
         const auto shapeRect = getShapeRect(shape);
 
         imageDst.setSize(shapeRect.width, shapeRect.height);
