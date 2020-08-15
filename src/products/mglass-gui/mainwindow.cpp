@@ -56,7 +56,7 @@ namespace
             const auto xFloat = static_cast<mglass::float_type>(x);
             const auto yFloat = static_cast<mglass::float_type>(y);
 
-            const mglass::shapes::Ellipse shape({ xFloat, -yFloat }, 350, 150);
+            const mglass::shapes::Ellipse shape({ xFloat, -yFloat }, 250, 100);
 
             const mglass::Point<mglass::int_type> mglassImgPos{ imageLabel_->pos().x(), -imageLabel_->pos().y() };
             mglass::magnifiers::nearestNeighbor(shape, 2, mglassImg_, mglassImgPos, magnifiedImg_);
@@ -107,6 +107,7 @@ MainWindow::MainWindow()
     ui_->setupUi(this);
 
     ui_->scrollArea->setWidget(new ImageView());
+    ui_->scrollAreaContainerWidget = ui_->scrollArea->widget();
 }
 
 MainWindow::~MainWindow()
