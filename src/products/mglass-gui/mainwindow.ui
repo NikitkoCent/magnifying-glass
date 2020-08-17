@@ -54,7 +54,7 @@
              <enum>QAbstractSpinBox::DefaultStepType</enum>
             </property>
             <property name="value">
-             <double>1.000000000000000</double>
+             <double>2.000000000000000</double>
             </property>
            </widget>
           </item>
@@ -82,7 +82,7 @@
          <property name="title">
           <string>Shapes</string>
          </property>
-         <layout class="QHBoxLayout" name="shapesGroupBoxLayout">
+         <layout class="QGridLayout" name="shapesGroupBoxLayout">
           <property name="leftMargin">
            <number>5</number>
           </property>
@@ -93,10 +93,16 @@
            <number>5</number>
           </property>
           <property name="bottomMargin">
-           <number>5</number>
+           <number>0</number>
           </property>
-          <item>
+          <item row="0" column="0">
            <widget class="QToolButton" name="ellipseShapeButton">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="text">
              <string>Ellipse</string>
             </property>
@@ -111,8 +117,14 @@
             </property>
            </widget>
           </item>
-          <item>
+          <item row="1" column="0">
            <widget class="QToolButton" name="rectShapeButton">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="text">
              <string>Rectangle</string>
             </property>
@@ -144,11 +156,11 @@
         </spacer>
        </item>
        <item>
-        <widget class="QGroupBox" name="dxGroupBox">
+        <widget class="QGroupBox" name="shapeSizeGroupBox">
          <property name="title">
-          <string>dx</string>
+          <string>Size</string>
          </property>
-         <layout class="QVBoxLayout" name="dxGroupBoxLayout">
+         <layout class="QVBoxLayout" name="verticalLayout">
           <property name="leftMargin">
            <number>5</number>
           </property>
@@ -163,6 +175,9 @@
           </property>
           <item>
            <widget class="QDoubleSpinBox" name="dxSpinBox">
+            <property name="prefix">
+             <string>dx: </string>
+            </property>
             <property name="suffix">
              <string> px.</string>
             </property>
@@ -186,29 +201,11 @@
             </property>
            </widget>
           </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="dyGroupBox">
-         <property name="title">
-          <string>dy</string>
-         </property>
-         <layout class="QVBoxLayout" name="dyGroupBoxLayout">
-          <property name="leftMargin">
-           <number>5</number>
-          </property>
-          <property name="topMargin">
-           <number>5</number>
-          </property>
-          <property name="rightMargin">
-           <number>5</number>
-          </property>
-          <property name="bottomMargin">
-           <number>5</number>
-          </property>
           <item>
            <widget class="QDoubleSpinBox" name="dySpinBox">
+            <property name="prefix">
+             <string>dy: </string>
+            </property>
             <property name="suffix">
              <string> px.</string>
             </property>
@@ -300,7 +297,7 @@
          <x>0</x>
          <y>0</y>
          <width>780</width>
-         <height>646</height>
+         <height>644</height>
         </rect>
        </property>
        <property name="styleSheet">
@@ -338,7 +335,7 @@
     <property name="geometry">
      <rect>
       <x>265</x>
-      <y>124</y>
+      <y>125</y>
       <width>134</width>
       <height>95</height>
      </rect>
@@ -352,7 +349,7 @@
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
-     <string>`Help</string>
+     <string>Help</string>
     </property>
     <addaction name="actionShowUsageHelp"/>
    </widget>

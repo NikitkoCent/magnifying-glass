@@ -1,113 +1,49 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "mglass/mglass.h"
-#include "mglass/shapes.h"
-#include "mglass/magnifiers.h"
-#include <QWidget>
-#include <QVBoxLayout>
-#include <QLabel>
-#include <QPixmap>
+#include "imageview.h"
 #include <QObject>
-#include <QMouseEvent>
+#include <QAction>
+#include <QToolButton>
+#include <QDoubleSpinBox>
+#include <QString>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QCheckBox>
 #include <QDebug>
-
-
-namespace
-{
-    class ImageView final : public QWidget
-    {
-        Q_OBJECT
-
-    public:
-        explicit ImageView(QWidget* parent = nullptr)
-            : QWidget(parent)
-            , layout_(new QVBoxLayout(this))
-            , imageLabel_(new QLabel(this))
-            , cursor_(cursor())
-        {
-            setStyleSheet("background-color:gray;");
-
-            layout_->setContentsMargins(imageMargins_, imageMargins_, imageMargins_, imageMargins_);
-            layout_->setAlignment(Qt::AlignTop);
-            layout_->addWidget(imageLabel_);
-
-            const QString imgPath = "D:\\Download\\Lenna.png";
-
-            mglassImg_ = mglass::Image::fromPNGFile(imgPath.toStdString());
-            imageLabel_->setPixmap(QPixmap(imgPath));
-        }
-
-    private:
-        void mouseMoveEvent(QMouseEvent* e) override
-        {
-            QWidget::mouseMoveEvent(e);
-
-            const auto pos = e->pos();
-            const auto x = pos.x();
-            const auto y = pos.y();
-
-            qDebug() << x << ' ' << y;
-
-            if ( (x < 0) || (x >= width()) )
-                return;
-            if ( (y < 0) || (y >= height()) )
-                return;
-
-            const auto xFloat = static_cast<mglass::float_type>(x);
-            const auto yFloat = static_cast<mglass::float_type>(y);
-
-            const mglass::shapes::Ellipse shape({ xFloat, -yFloat }, 250, 100);
-
-            const mglass::Point<mglass::int_type> mglassImgPos{ imageLabel_->pos().x(), -imageLabel_->pos().y() };
-            mglass::magnifiers::nearestNeighbor(shape, 2, mglassImg_, mglassImgPos, magnifiedImg_);
-
-            QImage newCursorImg(magnifiedImg_.getWidth(), magnifiedImg_.getHeight(), QImage::Format_ARGB32);
-            for (mglass::size_type y = 0; y < magnifiedImg_.getHeight(); ++y)
-            {
-                for (mglass::size_type x = 0; x < magnifiedImg_.getWidth(); ++x)
-                {
-                    const auto pixel = magnifiedImg_.getPixelAt(x, y);
-                    newCursorImg.setPixelColor(x, y, QColor(pixel.r, pixel.g, pixel.b, pixel.a));
-                }
-            }
-
-            setCursor(QPixmap::fromImage(newCursorImg));
-        }
-
-        void mousePressEvent(QMouseEvent* e) override
-        {
-            cursor_ = cursor();
-            setCursor(Qt::PointingHandCursor);
-
-            QWidget::mousePressEvent(e);
-        }
-
-        void mouseReleaseEvent(QMouseEvent* e) override
-        {
-            setCursor(cursor_);
-
-            QWidget::mouseReleaseEvent(e);
-        }
-
-    private:
-        static constexpr int imageMargins_ = 50;
-
-        QVBoxLayout* layout_;
-        QLabel* imageLabel_;
-        QCursor cursor_;
-        mglass::Image mglassImg_;
-        mglass::Image magnifiedImg_;
-    };
-}
+#include <exception>        // std::exception
 
 
 MainWindow::MainWindow()
     : ui_(new Ui::MainWindow())
+    , imageView_(nullptr)
 {
     ui_->setupUi(this);
 
-    ui_->scrollArea->setWidget(new ImageView());
+    imageView_ = new ImageView(ui_->scrollArea);
+    ui_->scrollArea->setWidget(imageView_);
     ui_->scrollAreaContainerWidget = ui_->scrollArea->widget();
+
+    { // QActions bindings
+        QObject::connect(ui_->actionOpen, &QAction::triggered, this, &MainWindow::onActionOpenTriggered);
+        QObject::connect(ui_->actionQuit, &QAction::triggered, this, &MainWindow::close);
+        QObject::connect(ui_->actionShowUsageHelp, &QAction::triggered, this, &MainWindow::onActionHelpTriggered);
+    }
+
+    { // Shape selectors bindings
+        QObject::connect(ui_->ellipseShapeButton, &QToolButton::triggered, this, &MainWindow::onEllipseShapeSelectorTriggered);
+        QObject::connect(ui_->rectShapeButton, &QToolButton::triggered, this, &MainWindow::onRectShapeSelectorTriggered);
+    }
+
+    { // dx, dy bindings
+        QObject::connect(ui_->dxSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &MainWindow::onDxValueChanged);
+        QObject::connect(ui_->dySpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &MainWindow::onDyValueChanged);
+    }
+
+    { // options bindings
+        QObject::connect(ui_->scaleFactorSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &MainWindow::onScaleFactorValueChanged);
+        QObject::connect(ui_->interpolateCheckBox, &QCheckBox::stateChanged, this, &MainWindow::onInterpolateOptionStateChanged);
+        QObject::connect(ui_->alphaBlendingCheckBox, &QCheckBox::stateChanged, this, &MainWindow::onAlphaBlendingOptionStateChanged);
+    }
 }
 
 MainWindow::~MainWindow()
@@ -116,4 +52,102 @@ MainWindow::~MainWindow()
     ui_ = nullptr;
 }
 
-#include "mainwindow.moc"
+
+void MainWindow::onActionOpenTriggered()
+{
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Image"), {}, tr("Image Files (*.png)"));
+
+    while (!fileName.isNull())
+    {
+        try
+        {
+            imageView_->setImage(mglass::Image::fromPNGFile(fileName.toStdString()));
+            break;
+        }
+        catch (const std::exception& err)
+        {
+            QMessageBox::critical(this, "Failed to load the image", QString::fromUtf8(err.what()));
+        }
+        catch (...)
+        {
+            QMessageBox::critical(this, "Failed to load the image", tr("Unknown error"));
+        }
+
+        fileName = QFileDialog::getOpenFileName(this, tr("Open Image"), {}, tr("Image Files (*.png)"));
+    }
+}
+
+void MainWindow::onActionHelpTriggered()
+{
+    return (void)QMessageBox::information(this, tr("Usage help"),
+        tr("Open PNG image via File->Open (Ctrl+O).\n"
+           "Then move mouse cursor to the area of displayed image and press any mouse button."));
+}
+
+
+void MainWindow::onEllipseShapeSelectorTriggered()
+{
+    // TODO: implement
+}
+
+void MainWindow::onRectShapeSelectorTriggered()
+{
+    // TODO: implement
+}
+
+
+void MainWindow::onDxValueChanged(double newValue)
+{
+    qDebug() << newValue;
+}
+
+void MainWindow::onDyValueChanged(double newValue)
+{
+    qDebug() << newValue;
+}
+
+
+void MainWindow::onScaleFactorValueChanged(double newValue)
+{
+    qDebug() << newValue;
+
+    try
+    {
+        imageView_->setScaleFactor(static_cast<mglass::float_type>(newValue));
+    }
+    catch (const std::exception& err)
+    {
+
+    }
+    catch (...)
+    {
+
+    }
+}
+
+
+void MainWindow::onInterpolateOptionStateChanged(int newState)
+{
+    switch (newState)
+    {
+        case Qt::Checked:
+            imageView_->enableInterpolating();
+            break;
+        default:
+            imageView_->disableInterpolating();
+            break;
+    }
+}
+
+void MainWindow::onAlphaBlendingOptionStateChanged(int newState)
+{
+    switch (newState)
+    {
+        case Qt::Checked:
+            imageView_->enableAntiAliasing();
+            break;
+        default:
+            imageView_->disableAntiAliasing();
+            break;
+    }
+}

@@ -13,6 +13,8 @@ add_executable(mglass-gui WIN32
                "mainwindow.h"
                "mainwindow.cpp"
                "mainwindow.ui"
+               "imageview.h"
+               "imageview.cpp"
                "main.cpp")
 
 enable_extra_compiler_warnings(mglass-gui)
