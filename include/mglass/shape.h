@@ -4,24 +4,64 @@
 #include "mglass/primitives.h"  // Point, Rect
 #include <functional>           // std::function
 #include <cmath>                // std::ceil, std::floor
+#include <type_traits>          // std::is_invocable_v
+#include <utility>              // std::forward
+
 
 namespace mglass
 {
     using ShapeRectArea = RectArea<mglass::float_type>;
 
 
-    // TODO: move to CRTP
+    template<typename Derived>
     struct Shape
     {
         // returns a bounding box of the Shape
-        virtual ShapeRectArea getBounds() const = 0;
+        ShapeRectArea getBounds() const
+        {
+            return static_cast<const Derived*>(this)->getBoundsImpl();
+        }
 
         // returns coordinates of `point` after resizing the shape by `scaleFactor` times
         // `scaleFactor` must be within the (0; +inf) range; undefined behavior otherwise
         // `point` must be inside the shape; undefined behavior otherwise (TODO: make the condition more friendly)
-        virtual Point<mglass::float_type> getPointAtScaled(mglass::float_type scaleFactor, Point<mglass::float_type> point) const = 0;
+        Point<mglass::float_type> getPointAtScaled(
+            mglass::float_type scaleFactor,
+            Point<mglass::float_type> point
+        ) const
+        {
+            return static_cast<const Derived*>(this)->getPointAtScaledImpl(scaleFactor, point);
+        }
 
-        virtual void rasterizeOnto(const IntegralRectArea& rect, std::function<void(Point<mglass::int_type>, mglass::float_type)> consumer) const = 0;
+        // TODO: add docs
+        template<typename ConsumerFunctor>
+        void rasterizeOnto(const IntegralRectArea& rect, ConsumerFunctor&& consumer) const
+        {
+            static_assert(std::is_invocable_v<ConsumerFunctor, Point<mglass::int_type>, mglass::float_type>,
+                "ConsumerFunctor must be invocable with the arguments (Point<mglass::int_type>, mglass::float_type)");
+
+            static_cast<const Derived*>(this)->rasterizeOntoImpl(rect, std::forward<ConsumerFunctor>(consumer));
+        }
+
+    protected: // crtp methods implementation
+        ShapeRectArea getBoundsImpl() const
+        {
+            static_assert(false, "is not implemented");
+        }
+
+        Point<mglass::float_type> getPointAtScaledImpl(
+            mglass::float_type scaleFactor,
+            Point<mglass::float_type> point
+        ) const
+        {
+            static_assert(false, "is not implemented");
+        }
+
+        template<typename ConsumerFunctor>
+        void rasterizeOntoImpl(IntegralRectArea rect, ConsumerFunctor&& consumer) const
+        {
+            static_assert(false, "is not implemented");
+        }
 
     protected:
         // dtor will not be invoked by the library
@@ -29,7 +69,8 @@ namespace mglass
     };
 
 
-    inline IntegralRectArea getShapeIntegralBounds(const Shape& shape)
+    template<typename Impl>
+    inline IntegralRectArea getShapeIntegralBounds(const Shape<Impl>& shape)
     {
         const auto preciseBounds = shape.getBounds();
 
