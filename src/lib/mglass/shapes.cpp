@@ -12,39 +12,6 @@ namespace mglass::shapes
     {}
 
 
-    Ellipse& Ellipse::moveTo(mglass::Point<mglass::float_type> newCenter) noexcept(false)
-    {
-        center_ = newCenter;
-
-        return *this;
-    }
-
-    Ellipse& Ellipse::moveBy(mglass::float_type dx, mglass::float_type dy) noexcept(false)
-    {
-        center_.x += dx;
-        center_.y += dy;
-
-        return *this;
-    }
-
-
-    Ellipse& Ellipse::setXAxis(mglass::float_type xAxis) noexcept(false)
-    {
-        // TODO: check float correctness and >=0
-        xAxisLength_ = xAxis;
-
-        return *this;
-    }
-
-    Ellipse& Ellipse::setYAxis(mglass::float_type yAxis) noexcept(false)
-    {
-        // TODO: check float correctness and >=0
-        yAxisLength_ = yAxis;
-
-        return *this;
-    }
-
-
     ShapeRectArea Ellipse::getBounds() const
     {
         const auto halfWidth = xAxisLength_ / 2;

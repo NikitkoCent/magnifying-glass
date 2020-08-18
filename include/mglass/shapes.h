@@ -5,7 +5,7 @@
 
 namespace mglass::shapes
 {
-    class Ellipse final : public Shape
+    class Ellipse : public Shape
     {
     public: // ctors/dtor
         explicit Ellipse(
@@ -14,13 +14,6 @@ namespace mglass::shapes
             mglass::float_type yAxis = 0) noexcept(false);
 
         ~Ellipse() noexcept = default;
-
-    public: // modifiers
-        Ellipse& moveTo(mglass::Point<mglass::float_type> newCenter) noexcept(false);
-        Ellipse& moveBy(mglass::float_type dx, mglass::float_type dy) noexcept(false);
-
-        Ellipse& setXAxis(mglass::float_type xAxis) noexcept(false);
-        Ellipse& setYAxis(mglass::float_type yAxis) noexcept(false);
 
     public: // getters
         ShapeRectArea getBounds() const override;
@@ -33,7 +26,7 @@ namespace mglass::shapes
             const IntegralRectArea& rect,
             std::function<void(Point<mglass::int_type>, mglass::float_type)> consumer) const override;
 
-    private:
+    protected:
         mglass::Point<mglass::float_type> center_;
         mglass::float_type xAxisLength_;
         mglass::float_type yAxisLength_;
