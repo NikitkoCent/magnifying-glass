@@ -39,8 +39,10 @@ namespace mglass
     public: // ctors/dtor
         explicit Image(mglass::size_type width = 0, mglass::size_type height = 0, ARGB color = ARGB::black());
 
-        static Image fromPNGStream(std::istream& stream) noexcept(false); // TODO: implement
+        // throws std::runtime_error if it is failed to parse the stream
+        static Image fromPNGStream(std::istream& stream) noexcept(false);
 
+        // throws std::runtime_error if it is failed to open/parse the file
         // TODO: move to std::filesystem::path
         static Image fromPNGFile(std::string_view filePath) noexcept(false);
 
@@ -59,8 +61,11 @@ namespace mglass
 
         ARGB getPixelAt(mglass::size_type x, mglass::size_type y) const;
 
-        void saveToPNGStream(std::ostream& stream) const; // TODO: implement
-        void saveToPNGFile(std::string_view filePath) const;
+        void saveToPNGStream(std::ostream& stream) const;
+
+        // throws std::runtime_error if it is failed to save this to the file at `filePath`
+        // TODO: move to std::filesystem::path
+        void saveToPNGFile(std::string_view filePath) const noexcept(false);
 
     private:
         std::vector<ARGB> data_;

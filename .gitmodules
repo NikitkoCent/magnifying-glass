@@ -4,6 +4,6 @@
 [submodule "third-party/cmake-modules"]
 	path = third-party/cmake-modules
 	url = https://github.com/NikitkoCent/cmake-modules
-[submodule "third-party/lodepng/lodepng"]
-	path = third-party/lodepng/lodepng
-	url = https://github.com/lvandeve/lodepng.git
+[submodule "third-party/stb/stb"]
+	path = third-party/stb/stb
+	url = https://github.com/nothings/stb.git

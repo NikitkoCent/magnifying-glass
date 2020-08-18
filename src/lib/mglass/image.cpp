@@ -1,6 +1,14 @@
 #include "mglass/image.h"
-#include "lodepng/lodepng.h"
-#include <string>
+#include "stb/stb_image.h"          // stbi_*
+#include "stb/stb_image_write.h"    // stbi_write_*
+#include <string>                   // std::string
+#include <stdexcept>                // std::runtime_error
+#include <iostream>                 // std::istream, std::ostream
+#include <memory>                   // std::unique_ptr
+#include <fstream>                  // std::ifstream, std::ofstream
+
+// TBD: probably we should avoid using exceptions for indicating runtime errors
+//      and should use smth like std::error_code or std::error_condition
 
 namespace mglass
 {
@@ -11,38 +19,76 @@ namespace mglass
     {}
 
 
-    Image Image::fromPNGFile(std::string_view filePath) noexcept(false)
+    Image Image::fromPNGStream(std::istream& stream) noexcept(false)
     {
-        std::vector<unsigned char> rawRGBA;
-        unsigned width, height;
+        stbi_io_callbacks ioCallbacks;
 
-        const auto err = lodepng::decode(rawRGBA, width, height, std::string{filePath});
-        if (err)
-            return Image{}; // TODO: throw exception
+        ioCallbacks.read = [](void* user, char* data, int size) noexcept -> int {
+            if (size < 0)
+                return size;
 
-        if ( (rawRGBA.size() % 4) != 0 )
-            return Image{}; // TODO: throw exception
+            std::istream& stream = *reinterpret_cast<std::istream*>(user);
 
-        Image result;
-        result.setSize(width, height);
+            (void)stream.read(data, static_cast<std::streamsize>(size));
 
-        std::vector<unsigned char>::size_type i = 0;
+            return static_cast<int>(stream.gcount());
+        };
 
-        for (mglass::size_type y = 0; y < height; ++y)
+        ioCallbacks.skip = [](void* user, int n) noexcept {
+            std::istream& stream = *reinterpret_cast<std::istream*>(user);
+            stream.seekg(static_cast<std::istream::off_type>(n), std::ios_base::cur);
+        };
+
+        ioCallbacks.eof = [](void* user) noexcept -> int {
+            std::istream& stream = *reinterpret_cast<std::istream*>(user);
+            return (!stream.good());
+        };
+
+        int widthSigned, heightSigned;
+        int streamChannels;
+        const struct StbImageHolder
         {
-            for (mglass::size_type x = 0; x < width; ++x)
+            stbi_uc* data;
+            ~StbImageHolder()
             {
-                ARGB pixel{};
-                pixel.r = static_cast<std::uint8_t>(rawRGBA[i++]);
-                pixel.g = static_cast<std::uint8_t>(rawRGBA[i++]);
-                pixel.b = static_cast<std::uint8_t>(rawRGBA[i++]);
-                pixel.a = static_cast<std::uint8_t>(rawRGBA[i++]);
-
-                result.setPixelAt(x, y, pixel);
+                if (data != nullptr)
+                {
+                    stbi_image_free(data);
+                    data = nullptr;
+                }
             }
+        } image{ stbi_load_from_callbacks(&ioCallbacks, &stream, &widthSigned, &heightSigned, &streamChannels, STBI_rgb_alpha) };
+
+        if (image.data == nullptr)
+            throw std::runtime_error(stbi_failure_reason());
+
+        if (widthSigned < 0)
+            throw std::runtime_error("image width < 0");
+        if (heightSigned < 0)
+            throw std::runtime_error("image height < 0");
+
+        Image result{ static_cast<mglass::size_type>(widthSigned), static_cast<mglass::size_type>(heightSigned) };
+
+        int i = 0;
+        for (ARGB& pixel : result.data_)
+        {
+            pixel.r = image.data[i++];
+            pixel.g = image.data[i++];
+            pixel.b = image.data[i++];
+            pixel.a = image.data[i++];
         }
 
         return result;
+    }
+
+    Image Image::fromPNGFile(std::string_view filePath) noexcept(false)
+    {
+        std::ifstream fStream(std::string{filePath}, std::ios::binary);
+
+        if (!fStream.is_open())
+            throw std::runtime_error("failed to open the input file");
+
+        return fromPNGStream(fStream);
     }
 
 
@@ -88,21 +134,56 @@ namespace mglass
     }
 
 
-    void Image::saveToPNGFile(std::string_view filePath) const
+    void Image::saveToPNGStream(std::ostream& stream) const
     {
-        std::vector<unsigned char> rawRGBA;
-        rawRGBA.reserve(width_ * height_);
+        stbi_write_func* const writeFn = [](void* context, void* data, int size) noexcept {
+            if (size < 0)
+                return;
 
-        for (const ARGB pixel : data_)
-        {
-            rawRGBA.emplace_back(pixel.r);
-            rawRGBA.emplace_back(pixel.g);
-            rawRGBA.emplace_back(pixel.b);
-            rawRGBA.emplace_back(pixel.a);
-        }
+            std::ostream& stream = *reinterpret_cast<std::ostream*>(context);
 
-        const auto err = lodepng::encode(std::string{filePath}, rawRGBA, width_, height_);
-        if (err)
-            ; // TODO: throw exception
+            const auto cchData = const_cast<const char*>(reinterpret_cast<char*>(data));
+            stream.write(cchData, static_cast<std::streamsize>(size));
+        };
+
+        const auto rawRGBA = [this] {
+            std::vector<std::uint8_t> result;
+            result.reserve(getWidth() * getHeight() * 4);
+
+            for (ARGB pixel : data_)
+            {
+                result.emplace_back(pixel.r);
+                result.emplace_back(pixel.g);
+                result.emplace_back(pixel.b);
+                result.emplace_back(pixel.a);
+            }
+
+            return result;
+        }();
+
+        const auto widthSigned = static_cast<int>(getWidth());
+        const auto heightSigned = static_cast<int>(getHeight());
+
+        const auto err = stbi_write_png_to_func(
+            writeFn,
+            &stream,
+            widthSigned,
+            heightSigned,
+            STBI_rgb_alpha,
+            rawRGBA.data(),
+            widthSigned * 4
+        );
+
+        if (err == 0)
+            throw std::runtime_error("failed to write the image to the stream");
+    }
+
+    void Image::saveToPNGFile(std::string_view filePath) const noexcept(false)
+    {
+        std::ofstream fStream{ std::string{filePath}, std::ios::binary };
+        if (!fStream.is_open())
+            throw std::runtime_error("failed to open the output file");
+
+        saveToPNGStream(fStream);
     }
 }

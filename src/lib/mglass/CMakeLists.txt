@@ -13,7 +13,8 @@ add_library(mglass STATIC
 enable_extra_compiler_warnings(mglass)
 
 target_include_directories(mglass
-                           PRIVATE "${magnifying-glass_SOURCE_DIR}/third-party/lodepng")
+                           PRIVATE "${magnifying-glass_SOURCE_DIR}/third-party/stb")
 
 target_link_libraries(mglass
-                      PRIVATE lodepng)
+                      PRIVATE stb_image
+                      PRIVATE stb_image_write)
