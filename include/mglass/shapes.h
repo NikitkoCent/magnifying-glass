@@ -23,17 +23,14 @@ namespace mglass::shapes
         Ellipse& setYAxis(mglass::float_type yAxis) noexcept(false);
 
     public: // getters
-        Point<mglass::float_type> getCenter() const noexcept override;
-
-        mglass::float_type getWidth() const noexcept override;
-        mglass::float_type getHeight() const noexcept override;
+        ShapeRectArea getBounds() const override;
 
         Point<mglass::float_type> getPointAtScaled(
             mglass::float_type scaleFactor,
             Point<mglass::float_type> point) const override;
 
         void rasterizeOnto(
-            const Rect& rect,
+            const IntegralRectArea& rect,
             std::function<void(Point<mglass::int_type>, mglass::float_type)> consumer) const override;
 
     private:

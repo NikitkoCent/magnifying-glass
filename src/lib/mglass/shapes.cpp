@@ -45,19 +45,13 @@ namespace mglass::shapes
     }
 
 
-    Point<mglass::float_type> Ellipse::getCenter() const noexcept
+    ShapeRectArea Ellipse::getBounds() const
     {
-        return center_;
-    }
+        const auto halfWidth = xAxisLength_ / 2;
+        const auto halfHeight = yAxisLength_ / 2;
+        const Point topLeft{ center_.x - halfWidth, center_.y + halfHeight };
 
-    mglass::float_type Ellipse::getWidth() const noexcept
-    {
-        return xAxisLength_;
-    }
-
-    mglass::float_type Ellipse::getHeight() const noexcept
-    {
-        return yAxisLength_;
+        return { topLeft, xAxisLength_, yAxisLength_ };
     }
 
 
@@ -73,7 +67,7 @@ namespace mglass::shapes
 
 
     void Ellipse::rasterizeOnto(
-        const Rect& rect,
+        const IntegralRectArea& rect,
         std::function<void(Point<mglass::int_type>, mglass::float_type)> consumer) const
     {
         // ellipse equation:
@@ -83,8 +77,8 @@ namespace mglass::shapes
         if ((rect.width < 1) || (rect.height < 1))
             return;
 
-        const Rect thisRect = getShapeRect(*this);
-        if ((thisRect.width < 1) || (thisRect.height < 1))
+        const IntegralRectArea thisIntegralBounds = getShapeIntegralBounds(*this);
+        if ((thisIntegralBounds.width < 1) || (thisIntegralBounds.height < 1))
             return;
 
         const auto rectXMin = rect.topLeft.x;
@@ -96,16 +90,16 @@ namespace mglass::shapes
         // TODO: optimize the algorithm:
         //  1. find for every y the exact range [xMin, xMax] for which every point (x, y) is inside the ellipse
 
-        // a^2 == (getWidth() / 2) ^ 2
-        const auto a2 = (getWidth() * getWidth()) / 4;
-        // b^2 == (getHeight() / 2) ^ 2
-        const auto b2 = (getHeight() * getHeight()) / 4;
+        // a^2 == (xAxisLength_ / 2) ^ 2
+        const auto a2 = (xAxisLength_ * xAxisLength_) / 4;
+        // b^2 == (yAxisLength_ / 2) ^ 2
+        const auto b2 = (yAxisLength_ * yAxisLength_) / 4;
 
-        const auto xStart = thisRect.topLeft.x;
-        const auto xEnd = thisRect.topLeft.x + static_cast<mglass::int_type>(thisRect.width);
+        const auto xStart = thisIntegralBounds.topLeft.x;
+        const auto xEnd = thisIntegralBounds.topLeft.x + static_cast<mglass::int_type>(thisIntegralBounds.width);
 
-        const auto yStart = thisRect.topLeft.y;
-        const auto yEnd = thisRect.topLeft.y - static_cast<mglass::int_type>(thisRect.height);
+        const auto yStart = thisIntegralBounds.topLeft.y;
+        const auto yEnd = thisIntegralBounds.topLeft.y - static_cast<mglass::int_type>(thisIntegralBounds.height);
 
         for (mglass::int_type yUnaligned = yStart; yUnaligned > yEnd; --yUnaligned)
         {

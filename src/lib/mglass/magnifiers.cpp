@@ -14,16 +14,19 @@ namespace mglass::magnifiers
     {
         //TODO: fix cases when shape is not fully inside imageRect
 
-        const auto shapeRect = getShapeRect(shape);
+        const auto shapeIntegralBounds = getShapeIntegralBounds(shape);
 
-        imageDst.setSize(shapeRect.width, shapeRect.height);
+        imageDst.setSize(shapeIntegralBounds.width, shapeIntegralBounds.height);
+        if ( (imageDst.getWidth() < 1) || (imageDst.getHeight() < 1) )
+            return;
+
         imageDst.fill(ARGB::transparent());
 
-        const Rect imageRect{imageTopLeft, imageSrc.getWidth(), imageSrc.getWidth()};
+        const IntegralRectArea imageBounds{imageTopLeft, imageSrc.getWidth(), imageSrc.getWidth()};
 
         shape.rasterizeOnto(
-            imageRect,
-            [&shape, shapeRect, scaleFactor, &imageSrc, imageTopLeft, &imageDst](const Point<mglass::int_type> rasterizePoint, float){
+            imageBounds,
+            [&shape, shapeIntegralBounds, scaleFactor, &imageSrc, imageTopLeft, &imageDst](const Point<mglass::int_type> rasterizePoint, float){
                 auto srcPointFloat = shape.getPointAtScaled(scaleFactor, pointCast<mglass::float_type>(rasterizePoint));
                 srcPointFloat.x = std::floor(srcPointFloat.x);
                 srcPointFloat.y = std::floor(srcPointFloat.y);
@@ -42,11 +45,14 @@ namespace mglass::magnifiers
 
                 const auto srcPixel = imageSrc.getPixelAt(srcX, srcY);
 
-                assert( (rasterizePoint.x >= shapeRect.topLeft.x) );
-                assert( (rasterizePoint.y <= shapeRect.topLeft.y) );
+                assert( (rasterizePoint.x >= shapeIntegralBounds.topLeft.x) );
+                assert( (rasterizePoint.y <= shapeIntegralBounds.topLeft.y) );
 
-                const auto dstX = static_cast<mglass::size_type>(rasterizePoint.x - shapeRect.topLeft.x);
-                const auto dstY = static_cast<mglass::size_type>(shapeRect.topLeft.y - rasterizePoint.y);
+                const auto dstX = static_cast<mglass::size_type>(rasterizePoint.x - shapeIntegralBounds.topLeft.x);
+                const auto dstY = static_cast<mglass::size_type>(shapeIntegralBounds.topLeft.y - rasterizePoint.y);
+
+                assert( (dstX < imageDst.getWidth()) );
+                assert( (dstY < imageDst.getHeight()) );
 
                 imageDst.setPixelAt(dstX, dstY, srcPixel);
         });
