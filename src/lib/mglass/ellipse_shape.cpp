@@ -13,7 +13,7 @@ namespace mglass::shapes
     {}
 
 
-    ShapeRectArea Ellipse::getBoundsImpl() const
+    ShapeRectArea Ellipse::getBoundsImpl() const noexcept
     {
         const auto halfWidth = xAxisLength_ / 2;
         const auto halfHeight = yAxisLength_ / 2;
@@ -25,7 +25,7 @@ namespace mglass::shapes
 
     Point<mglass::float_type> Ellipse::getPointAtScaledImpl(
         mglass::float_type scaleFactor,
-        Point<mglass::float_type> point) const
+        Point<mglass::float_type> point) const noexcept
     {
         const auto dx = point.x - center_.x;
         const auto dy = point.y - center_.y;

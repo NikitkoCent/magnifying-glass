@@ -25,12 +25,12 @@ namespace mglass::shapes
         mglass::float_type yAxisLength_;
 
     private: // Shape<Ellipse> implementation
-        ShapeRectArea getBoundsImpl() const;
+        ShapeRectArea getBoundsImpl() const noexcept;
 
         Point<mglass::float_type> getPointAtScaledImpl(
             mglass::float_type scaleFactor,
             Point<mglass::float_type> point
-        ) const;
+        ) const noexcept;
 
         template<typename ConsumerFunctor>
         void rasterizeOntoImpl(IntegralRectArea rect, ConsumerFunctor&& consumer) const
@@ -96,7 +96,7 @@ namespace mglass::shapes
                     if (b2x2 <= rightPart)
                     {
                         // TODO: compute the second parameter of the consumer
-                        std::forward<ConsumerFunctor>(consumer)({ xUnaligned, yUnaligned }, 1);
+                        (void)std::forward<ConsumerFunctor>(consumer)({ xUnaligned, yUnaligned }, 1);
                     }
                 }
             }
