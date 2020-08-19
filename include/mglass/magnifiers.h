@@ -11,7 +11,7 @@
 namespace mglass::magnifiers
 {
     // imageDst will have size is getShapeIntegralBounds(shape).width x getShapeIntegralBounds(shape).height
-    // if imageSrc and imageDst point to the same object, behavior is undefined
+    // if imageSrc and imageDst point to the same object, behaviour is undefined
     template<typename ShapeImpl>
     void nearestNeighbor(
         const Shape<ShapeImpl>& shape,
@@ -30,7 +30,7 @@ namespace mglass::magnifiers
 
         imageDst.fill(ARGB::transparent());
 
-        const IntegralRectArea imageBounds{imageTopLeft, imageSrc.getWidth(), imageSrc.getWidth()};
+        const IntegralRectArea imageBounds{imageTopLeft, imageSrc.getWidth(), imageSrc.getHeight()};
 
         shape.rasterizeOnto(
             imageBounds,
@@ -67,7 +67,7 @@ namespace mglass::magnifiers
     }
 
     // imageDst will have size is getShapeIntegralBounds(shape).width x getShapeIntegralBounds(shape).height
-    // if imageSrc and imageDst point to the same object, behavior is undefineds
+    // if imageSrc and imageDst point to the same object, behaviour is undefineds
     template<typename ShapeImpl>
     void nearestNeighborInterpolated(
         const Shape<ShapeImpl>& shape,
