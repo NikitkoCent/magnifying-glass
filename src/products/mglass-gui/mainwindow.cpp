@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "imageview.h"
+#include "polymorphic_shapes.h" // PolymorphicEllipse, PolymorphicRectangle
 #include <QObject>
 #include <QAction>
 #include <QToolButton>
@@ -10,7 +11,7 @@
 #include <QMessageBox>
 #include <QCheckBox>
 #include <QDebug>
-#include <exception>        // std::exception
+#include <exception>            // std::exception
 
 
 MainWindow::MainWindow()
@@ -30,8 +31,8 @@ MainWindow::MainWindow()
     }
 
     { // Shape selectors bindings
-        QObject::connect(ui_->ellipseShapeButton, &QToolButton::triggered, this, &MainWindow::onEllipseShapeSelectorTriggered);
-        QObject::connect(ui_->rectShapeButton, &QToolButton::triggered, this, &MainWindow::onRectShapeSelectorTriggered);
+        QObject::connect(ui_->ellipseShapeButton, &QToolButton::clicked, this, &MainWindow::onEllipseShapeSelectorTriggered);
+        QObject::connect(ui_->rectShapeButton, &QToolButton::clicked, this, &MainWindow::onRectShapeSelectorTriggered);
     }
 
     { // dx, dy bindings
@@ -44,6 +45,9 @@ MainWindow::MainWindow()
         QObject::connect(ui_->interpolateCheckBox, &QCheckBox::stateChanged, this, &MainWindow::onInterpolateOptionStateChanged);
         QObject::connect(ui_->alphaBlendingCheckBox, &QCheckBox::stateChanged, this, &MainWindow::onAlphaBlendingOptionStateChanged);
     }
+
+    // set default shape
+    onEllipseShapeSelectorTriggered();
 }
 
 MainWindow::~MainWindow()
@@ -55,6 +59,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::onActionOpenTriggered()
 {
+    qDebug() << __func__;
+
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open Image"), {}, tr("Image Files (*.png)"));
 
     while (!fileName.isNull())
@@ -79,6 +85,8 @@ void MainWindow::onActionOpenTriggered()
 
 void MainWindow::onActionHelpTriggered()
 {
+    qDebug() << __func__;
+
     return (void)QMessageBox::information(this, tr("Usage help"),
         tr("Open PNG image via File->Open (Ctrl+O).\n"
            "Then move mouse cursor to the area of displayed image and press any mouse button."));
@@ -87,47 +95,70 @@ void MainWindow::onActionHelpTriggered()
 
 void MainWindow::onEllipseShapeSelectorTriggered()
 {
-    // TODO: implement
+    qDebug() << __func__;
+
+    imageView_->setShape(std::make_unique<PolymorphicEllipse>(
+        static_cast<mglass::float_type>(ui_->dxSpinBox->value()),
+        static_cast<mglass::float_type>(ui_->dySpinBox->value())
+    ));
 }
 
 void MainWindow::onRectShapeSelectorTriggered()
 {
-    // TODO: implement
+    qDebug() << __func__;
+
+    imageView_->setShape(std::make_unique<PolymorphicRectangle>(
+        static_cast<mglass::float_type>(ui_->dxSpinBox->value()),
+        static_cast<mglass::float_type>(ui_->dySpinBox->value())
+    ));
 }
 
 
 void MainWindow::onDxValueChanged(double newValue)
 {
-    qDebug() << newValue;
+    qDebug() << __func__ << newValue;
+
+    if (ui_->ellipseShapeButton->isChecked())
+        imageView_->setShape(std::make_unique<PolymorphicEllipse>(
+            static_cast<mglass::float_type>(newValue),
+            static_cast<mglass::float_type>(ui_->dySpinBox->value())
+        ));
+    else
+        imageView_->setShape(std::make_unique<PolymorphicRectangle>(
+            static_cast<mglass::float_type>(newValue),
+            static_cast<mglass::float_type>(ui_->dySpinBox->value())
+        ));
 }
 
 void MainWindow::onDyValueChanged(double newValue)
 {
-    qDebug() << newValue;
+    qDebug() << __func__ << newValue;
+
+    if (ui_->ellipseShapeButton->isChecked())
+        imageView_->setShape(std::make_unique<PolymorphicEllipse>(
+            static_cast<mglass::float_type>(ui_->dxSpinBox->value()),
+            static_cast<mglass::float_type>(newValue)
+        ));
+    else
+        imageView_->setShape(std::make_unique<PolymorphicRectangle>(
+            static_cast<mglass::float_type>(ui_->dxSpinBox->value()),
+            static_cast<mglass::float_type>(newValue)
+        ));
 }
 
 
 void MainWindow::onScaleFactorValueChanged(double newValue)
 {
-    qDebug() << newValue;
+    qDebug() << __func__ << newValue;
 
-    try
-    {
-        imageView_->setScaleFactor(static_cast<mglass::float_type>(newValue));
-    }
-    catch (const std::exception& err)
-    {
-
-    }
-    catch (...)
-    {
-
-    }
+    imageView_->setScaleFactor(static_cast<mglass::float_type>(newValue));
 }
 
 
 void MainWindow::onInterpolateOptionStateChanged(int newState)
 {
+    qDebug() << __func__ << newState;
+
     switch (newState)
     {
         case Qt::Checked:
@@ -141,6 +172,8 @@ void MainWindow::onInterpolateOptionStateChanged(int newState)
 
 void MainWindow::onAlphaBlendingOptionStateChanged(int newState)
 {
+    qDebug() << __func__ << newState;
+
     switch (newState)
     {
         case Qt::Checked:

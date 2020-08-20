@@ -1,5 +1,4 @@
 #include "imageview.h"
-#include "mglass/magnifiers.h"  // mglass::magnifiers::
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QPixmap>
@@ -7,13 +6,13 @@
 #include <utility>              // std::move
 #include <cmath>                // std::isnan
 #include <stdexcept>            // std::invalid_argument
-// TODO: remove
-#include <QDebug>               // qDebug()
 
 
 ImageView::ImageView(QWidget* parent)
     : QWidget(parent)
     , scaleFactor_(2.0)
+    , antialiasingIsEnabled_(false)
+    , interpolatingIsEnabled_(false)
     , magnifierIsDisplayed_(false)
     , layout_(new QVBoxLayout(this))
     , imageLabel_(new QLabel(tr("Use File->Open (Ctrl+O) to load an image"), this))
@@ -48,20 +47,16 @@ void ImageView::setImage(mglass::Image&& newImg)
 }
 
 
-void ImageView::setShape(mglass::shapes::Ellipse&& newShape)
+void ImageView::setShape(std::unique_ptr<PolymorphicShape> newShape) noexcept(false)
 {
+    if (!newShape)
+        throw std::invalid_argument("`newShape` does not own an object");
+
     mglassShape_ = std::move(newShape);
 
     updateMagnifierCursor();
 }
 
-void ImageView::setShape(mglass::shapes::Rectangle&& newShape)
-{
-    // TODO: uncomment
-    //mglassShape_ = std::move(newShape);
-
-    updateMagnifierCursor();
-}
 
 void ImageView::setScaleFactor(mglass::float_type newScaleFactor) noexcept(false)
 {
@@ -69,7 +64,7 @@ void ImageView::setScaleFactor(mglass::float_type newScaleFactor) noexcept(false
         throw std::invalid_argument("ImageView::setScaleFactor(float newScaleFactor): newScaleFactor is NaN");
 
     if (std::isinf(newScaleFactor) || (newScaleFactor <= 0))
-        throw std::invalid_argument("ImageView::setScaleFactor(float newScaleFactor): newScaleFactor is not inside a range (0; +inf)");
+        throw std::invalid_argument("ImageView::setScaleFactor(float newScaleFactor): newScaleFactor is not inside the range (0; +inf)");
 
     scaleFactor_ = newScaleFactor;
 
@@ -161,10 +156,11 @@ void ImageView::disableMagnifier()
 
 void ImageView::updateMagnifierCursor(int posX, int posY)
 {
-    qDebug() << posX << ' ' << posY;
-
     if (!magnifierIsDisplayed_)
         return;
+
+    if (!mglassShape_)
+        return (void)disableMagnifier();
 
     if ( (posX < 0) || (posX >= width()) || (posY < 0) || (posY >= height()) )
         return (void)disableMagnifier();
@@ -172,8 +168,7 @@ void ImageView::updateMagnifierCursor(int posX, int posY)
     const auto xFloat = static_cast<mglass::float_type>(posX);
     const auto yFloat = static_cast<mglass::float_type>(posY);
 
-    // TODO: move to mglassShape_
-    const mglass::shapes::Ellipse shape{ { xFloat, -yFloat }, 250, 100 };
+    mglassShape_->moveCenterTo(xFloat, -yFloat);
 
     const mglass::Point<mglass::int_type> mglassImgPos{ imageLabel_->pos().x() + imageBorders_, -imageLabel_->pos().y() - imageBorders_ };
 
@@ -182,12 +177,12 @@ void ImageView::updateMagnifierCursor(int posX, int posY)
     {
 
     }
-    else if (interpolatingIsEnabled_)
+    else */if (interpolatingIsEnabled_)
     {
-
+        mglassShape_->applyNearestNeighborInterpolated(scaleFactor_, *mglassWholeImg_, mglassImgPos, mglassMagnifiedImg_);
     }
-    else*/
-        mglass::magnifiers::nearestNeighbor(shape, scaleFactor_, *mglassWholeImg_, mglassImgPos, mglassMagnifiedImg_);
+    else
+        mglassShape_->applyNearestNeighbor(scaleFactor_, *mglassWholeImg_, mglassImgPos, mglassMagnifiedImg_);
 
     convertMglassImgToQtImg(mglassMagnifiedImg_, cursorImgBuf_);
 
@@ -212,9 +207,10 @@ void ImageView::convertMglassImgToQtImg(const mglass::Image& src, QImage& dst)
     const auto widthSigned = static_cast<int>(width);
     const auto heightSigned = static_cast<int>(height);
 
-    // I did not find any effective way for resizing QImage in-place
-    // We can pass custom raw buffer to QImage
-    //  but it will be really hard to track the lifetimes of all CoW-instances of QImage use this buffer
+    // I did not find any effective way for resizing QImage in-place.
+    //
+    // Unless we can pass custom raw buffer to QImage
+    //  but it will be really hard to track the lifetimes of all CoW-copies of QImage use this buffer
     dst = QImage(widthSigned, heightSigned, QImage::Format_ARGB32);
 
     mglass::size_type y = 0;

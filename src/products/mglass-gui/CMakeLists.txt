@@ -28,6 +28,9 @@ add_executable(mglass-gui WIN32
                "mainwindow.ui"
                "imageview.h"
                "imageview.cpp"
+               "polymorphic_shape.h"
+               "polymorphic_shapes.h"
+               "polymorphic_shapes.cpp"
                "main.cpp")
 
 enable_extra_compiler_warnings(mglass-gui)

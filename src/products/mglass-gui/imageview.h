@@ -1,13 +1,13 @@
 #ifndef MGLASS_GUI_IMAGEVIEW_H
 #define MGLASS_GUI_IMAGEVIEW_H
 
-#include "mglass/mglass.h"  // mglass::Image
-#include "mglass/shapes.h"  // mglass::shapes::*
+#include "polymorphic_shape.h"  // PolymorphicShape
+#include "mglass/mglass.h"      // mglass::*
 #include <QWidget>
 #include <QCursor>
 #include <QImage>
-#include <variant>          // std::variant
-#include <optional>         // std::optional
+#include <memory>               // std::unique_ptr
+#include <optional>             // std::optional
 
 
 class QVBoxLayout;
@@ -26,11 +26,10 @@ public: // ctors/dtor
 public: // modifiers
     void setImage(mglass::Image&& newImg);
 
-    // TODO: move to CRTP
-    void setShape(mglass::shapes::Ellipse&& newShape);
-    void setShape(mglass::shapes::Rectangle&& newShape);
+    // throws std::invalid_argument if `newShape` does not own an object (!newShape returns true)
+    void setShape(std::unique_ptr<PolymorphicShape> newShape) noexcept(false);
 
-    // throws std::invalid_argument exception if newScaleFactor is NaN or is not inside a range (0; +inf)
+    // throws std::invalid_argument exception if newScaleFactor is NaN or is not inside the range (0; +inf)
     void setScaleFactor(mglass::float_type newScaleFactor) noexcept(false);
 
     void enableAntiAliasing();
@@ -65,9 +64,7 @@ private:
     static constexpr int imageBorders_ = 5;
 
 private:
-    // we also can move to some abstract interface with pure-virtual methods
-    // TODO: uncomment second param
-    std::variant<mglass::shapes::Ellipse/*, mglass::shapes::Rectangle*/> mglassShape_;
+    std::unique_ptr<PolymorphicShape> mglassShape_;
     mglass::float_type scaleFactor_;
     bool antialiasingIsEnabled_;
     bool interpolatingIsEnabled_;

@@ -1,0 +1,48 @@
+#include "polymorphic_shapes.h"
+#include "mglass/magnifiers.h"      // mglass::magnifiers::*
+
+
+PolymorphicRectangle::PolymorphicRectangle(mglass::float_type dx, mglass::float_type dy) noexcept
+    : mglass::shapes::Rectangle({0, 0}, dx, dy)
+{}
+
+void PolymorphicRectangle::applyNearestNeighbor(
+    mglass::float_type scaleFactor,
+    const mglass::Image& imageSrc,
+    mglass::Point<mglass::int_type> imageTopLeft,
+    mglass::Image& imageDst) const
+{
+    mglass::magnifiers::nearestNeighbor(*this, scaleFactor, imageSrc, imageTopLeft, imageDst);
+}
+
+void PolymorphicRectangle::applyNearestNeighborInterpolated(
+    mglass::float_type scaleFactor,
+    const mglass::Image& imageSrc,
+    mglass::Point<mglass::int_type> imageTopLeft,
+    mglass::Image& imageDst) const
+{
+    //mglass::magnifiers::nearestNeighborInterpolated(*this, scaleFactor, imageSrc, imageTopLeft, imageDst);
+}
+
+
+PolymorphicEllipse::PolymorphicEllipse(mglass::float_type dx, mglass::float_type dy) noexcept
+    : mglass::shapes::Ellipse({0, 0}, dx, dy)
+{}
+
+void PolymorphicEllipse::applyNearestNeighbor(
+    mglass::float_type scaleFactor,
+    const mglass::Image& imageSrc,
+    mglass::Point<mglass::int_type> imageTopLeft,
+    mglass::Image& imageDst) const
+{
+    mglass::magnifiers::nearestNeighbor(*this, scaleFactor, imageSrc, imageTopLeft, imageDst);
+}
+
+void PolymorphicEllipse::applyNearestNeighborInterpolated(
+    mglass::float_type scaleFactor,
+    const mglass::Image& imageSrc,
+    mglass::Point<mglass::int_type> imageTopLeft,
+    mglass::Image& imageDst) const
+{
+    //mglass::magnifiers::nearestNeighborInterpolated(*this, scaleFactor, imageSrc, imageTopLeft, imageDst);
+}
