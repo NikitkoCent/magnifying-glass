@@ -15,6 +15,7 @@ class QLabel;
 class QMouseEvent;
 
 
+// TODO: add description
 class ImageView final : public QWidget
 {
     Q_OBJECT

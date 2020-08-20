@@ -162,7 +162,7 @@ void ImageView::updateMagnifierCursor(int posX, int posY)
     if (!mglassShape_)
         return (void)disableMagnifier();
 
-    if ( (posX < 0) || (posX >= width()) || (posY < 0) || (posY >= height()) )
+    if (!visibleRegion().contains(QPoint(posX, posY)))
         return (void)disableMagnifier();
 
     const auto xFloat = static_cast<mglass::float_type>(posX);
@@ -171,6 +171,8 @@ void ImageView::updateMagnifierCursor(int posX, int posY)
     mglassShape_->moveCenterTo(xFloat, -yFloat);
 
     const mglass::Point<mglass::int_type> mglassImgPos{ imageLabel_->pos().x() + imageBorders_, -imageLabel_->pos().y() - imageBorders_ };
+
+    // TODO: crop mglassWholeImg_ to visibleRegion(). It can be implemented via smth like mglass::ImageView
 
     // TODO: implement
     /*if (antialiasingIsEnabled_)
@@ -209,8 +211,8 @@ void ImageView::convertMglassImgToQtImg(const mglass::Image& src, QImage& dst)
 
     // I did not find any effective way for resizing QImage in-place.
     //
-    // Unless we can pass custom raw buffer to QImage
-    //  but it will be really hard to track the lifetimes of all CoW-copies of QImage use this buffer
+    // Unless we can pass custom raw buffer to QImage,
+    //  but it will be really hard to track the lifetimes of all CoW-copies of QImage use this buffer.
     dst = QImage(widthSigned, heightSigned, QImage::Format_ARGB32);
 
     mglass::size_type y = 0;
