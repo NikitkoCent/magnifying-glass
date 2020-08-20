@@ -8,10 +8,11 @@ add_library(mglass STATIC
             "${magnifying-glass_SOURCE_DIR}/include/mglass/rectangle_shape.h"
             "${magnifying-glass_SOURCE_DIR}/include/mglass/magnifiers.h"
             "mglass.cpp"
-            "magnifiers.cpp"
+            "image.cpp"
             "ellipse_shape.cpp"
             "rectangle_shape.cpp"
-            "image.cpp")
+            "magnifiers.cpp"
+           )
 
 enable_extra_compiler_warnings(mglass)
 
