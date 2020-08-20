@@ -22,14 +22,16 @@ struct PolymorphicRectangle final : PolymorphicShape, mglass::shapes::Rectangle
         mglass::float_type scaleFactor,
         const mglass::Image& imageSrc,
         mglass::Point<mglass::int_type> imageTopLeft,
-        mglass::Image& imageDst
+        mglass::Image& imageDst,
+        bool enableAlphaBlending
     ) const override;
 
     void applyNearestNeighborInterpolated(
         mglass::float_type scaleFactor,
         const mglass::Image& imageSrc,
         mglass::Point<mglass::int_type> imageTopLeft,
-        mglass::Image& imageDst
+        mglass::Image& imageDst,
+        bool enableAlphaBlending
     ) const override;
 };
 
@@ -51,14 +53,16 @@ struct PolymorphicEllipse final : PolymorphicShape, mglass::shapes::Ellipse
         mglass::float_type scaleFactor,
         const mglass::Image& imageSrc,
         mglass::Point<mglass::int_type> imageTopLeft,
-        mglass::Image& imageDst
+        mglass::Image& imageDst,
+        bool enableAlphaBlending
     ) const override;
 
     void applyNearestNeighborInterpolated(
         mglass::float_type scaleFactor,
         const mglass::Image& imageSrc,
         mglass::Point<mglass::int_type> imageTopLeft,
-        mglass::Image& imageDst
+        mglass::Image& imageDst,
+        bool enableAlphaBlending
     ) const override;
 };
 

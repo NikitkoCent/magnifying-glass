@@ -3,7 +3,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 # From official Qt's CMake tutorial
-if(CMAKE_VERSION VERSION_LESS "3.7.0")
+if (CMAKE_VERSION VERSION_LESS "3.7.0")
     set(CMAKE_INCLUDE_CURRENT_DIR ON)
 endif()
 
@@ -44,7 +44,7 @@ target_link_libraries(mglass-gui
 # copy Qt dlls to exe build dir
 add_custom_command(TARGET mglass-gui POST_BUILD
 
-                   COMMAND "${CMAKE_COMMAND}" -E copy
+                   COMMAND "${CMAKE_COMMAND}" -E copy_if_different
                    "$<TARGET_FILE:Qt5::Core>" "$<TARGET_FILE:Qt5::Gui>" "$<TARGET_FILE:Qt5::Widgets>" "$<TARGET_FILE_DIR:mglass-gui>")
 
 if (WIN32)
@@ -54,6 +54,6 @@ if (WIN32)
                        COMMAND "${CMAKE_COMMAND}" -E make_directory
                        "$<TARGET_FILE_DIR:mglass-gui>/platforms"
 
-                       COMMAND "${CMAKE_COMMAND}" -E copy
+                       COMMAND "${CMAKE_COMMAND}" -E copy_if_different
                        "$<TARGET_FILE:Qt5::QWindowsIntegrationPlugin>" "$<TARGET_FILE_DIR:mglass-gui>/platforms/")
 endif(WIN32)

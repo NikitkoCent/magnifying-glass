@@ -11,7 +11,7 @@
 ImageView::ImageView(QWidget* parent)
     : QWidget(parent)
     , scaleFactor_(2.0)
-    , antialiasingIsEnabled_(false)
+    , alphaBlendingIsEnabled_(false)
     , interpolatingIsEnabled_(false)
     , magnifierIsDisplayed_(false)
     , layout_(new QVBoxLayout(this))
@@ -72,16 +72,16 @@ void ImageView::setScaleFactor(mglass::float_type newScaleFactor) noexcept(false
 }
 
 
-void ImageView::enableAntiAliasing()
+void ImageView::enableAlphaBlending()
 {
-    antialiasingIsEnabled_ = true;
+    alphaBlendingIsEnabled_ = true;
 
     updateMagnifierCursor();
 }
 
-void ImageView::disableAntiAliasing()
+void ImageView::disableAlphaBlending()
 {
-    antialiasingIsEnabled_ = false;
+    alphaBlendingIsEnabled_ = false;
 
     updateMagnifierCursor();
 }
@@ -174,17 +174,10 @@ void ImageView::updateMagnifierCursor(int posX, int posY)
 
     // TODO: crop mglassWholeImg_ to visibleRegion(). It can be implemented via smth like mglass::ImageView
 
-    // TODO: implement
-    /*if (antialiasingIsEnabled_)
-    {
-
-    }
-    else */if (interpolatingIsEnabled_)
-    {
-        mglassShape_->applyNearestNeighborInterpolated(scaleFactor_, *mglassWholeImg_, mglassImgPos, mglassMagnifiedImg_);
-    }
+    if (interpolatingIsEnabled_)
+        mglassShape_->applyNearestNeighborInterpolated(scaleFactor_, *mglassWholeImg_, mglassImgPos, mglassMagnifiedImg_, alphaBlendingIsEnabled_);
     else
-        mglassShape_->applyNearestNeighbor(scaleFactor_, *mglassWholeImg_, mglassImgPos, mglassMagnifiedImg_);
+        mglassShape_->applyNearestNeighbor(scaleFactor_, *mglassWholeImg_, mglassImgPos, mglassMagnifiedImg_, alphaBlendingIsEnabled_);
 
     convertMglassImgToQtImg(mglassMagnifiedImg_, cursorImgBuf_);
 

@@ -21,14 +21,16 @@ struct PolymorphicShape
         mglass::float_type scaleFactor,
         const mglass::Image& imageSrc,
         mglass::Point<mglass::int_type> imageTopLeft,
-        mglass::Image& imageDst
+        mglass::Image& imageDst,
+        bool enableAlphaBlending
     ) const = 0;
 
     virtual void applyNearestNeighborInterpolated(
         mglass::float_type scaleFactor,
         const mglass::Image& imageSrc,
         mglass::Point<mglass::int_type> imageTopLeft,
-        mglass::Image& imageDst
+        mglass::Image& imageDst,
+        bool enableAlphaBlending
     ) const = 0;
 };
 

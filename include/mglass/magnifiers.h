@@ -80,7 +80,10 @@ namespace mglass::magnifiers
         const Image& imageSrc,
         Point<mglass::int_type> imageLeftTop,
         Image& imageDst,
-        bool enableAlphaBlending = false);
+        bool enableAlphaBlending = false)
+    {
+        // TODO: implement
+    }
 }
 
 #endif // ndef MAGNIFYING_GLASS_MAGNIFIERS_H

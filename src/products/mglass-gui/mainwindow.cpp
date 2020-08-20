@@ -177,10 +177,10 @@ void MainWindow::onAlphaBlendingOptionStateChanged(int newState)
     switch (newState)
     {
         case Qt::Checked:
-            imageView_->enableAntiAliasing();
+            imageView_->enableAlphaBlending();
             break;
         default:
-            imageView_->disableAntiAliasing();
+            imageView_->disableAlphaBlending();
             break;
     }
 }

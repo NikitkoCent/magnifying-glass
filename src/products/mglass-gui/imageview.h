@@ -15,7 +15,9 @@ class QLabel;
 class QMouseEvent;
 
 
-// TODO: add description
+// The ImageView class is a canvas for displaying instances of mglass::Image objects
+//  and drawing a specified (via setShape) magnifying glass over it
+//  (when any mouse button is pressed and the cursor is inside ImageView's area)
 class ImageView final : public QWidget
 {
     Q_OBJECT
@@ -33,15 +35,15 @@ public: // modifiers
     // throws std::invalid_argument exception if newScaleFactor is NaN or is not inside the range (0; +inf)
     void setScaleFactor(mglass::float_type newScaleFactor) noexcept(false);
 
-    void enableAntiAliasing();
-    void disableAntiAliasing();
+    void enableAlphaBlending();
+    void disableAlphaBlending();
 
     void enableInterpolating();
     void disableInterpolating();
 
 public: // getters
     mglass::float_type getScaleFactor() const noexcept { return scaleFactor_; }
-    bool isAntiAliasingEnabled() const noexcept { return antialiasingIsEnabled_; }
+    bool isAlphaBlendingEnabled() const noexcept { return alphaBlendingIsEnabled_; }
     bool isInterpolatingEnabled() const noexcept { return interpolatingIsEnabled_; }
 
 private: // mouse events handlers
@@ -67,7 +69,7 @@ private:
 private:
     std::unique_ptr<PolymorphicShape> mglassShape_;
     mglass::float_type scaleFactor_;
-    bool antialiasingIsEnabled_;
+    bool alphaBlendingIsEnabled_;
     bool interpolatingIsEnabled_;
     bool magnifierIsDisplayed_;
     QVBoxLayout* layout_;

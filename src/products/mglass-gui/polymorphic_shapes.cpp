@@ -10,18 +10,20 @@ void PolymorphicRectangle::applyNearestNeighbor(
     mglass::float_type scaleFactor,
     const mglass::Image& imageSrc,
     mglass::Point<mglass::int_type> imageTopLeft,
-    mglass::Image& imageDst) const
+    mglass::Image& imageDst,
+    bool enableAlphaBlending) const
 {
-    mglass::magnifiers::nearestNeighbor(*this, scaleFactor, imageSrc, imageTopLeft, imageDst);
+    mglass::magnifiers::nearestNeighbor(*this, scaleFactor, imageSrc, imageTopLeft, imageDst, enableAlphaBlending);
 }
 
 void PolymorphicRectangle::applyNearestNeighborInterpolated(
     mglass::float_type scaleFactor,
     const mglass::Image& imageSrc,
     mglass::Point<mglass::int_type> imageTopLeft,
-    mglass::Image& imageDst) const
+    mglass::Image& imageDst,
+    bool enableAlphaBlending) const
 {
-    //mglass::magnifiers::nearestNeighborInterpolated(*this, scaleFactor, imageSrc, imageTopLeft, imageDst);
+    mglass::magnifiers::nearestNeighborInterpolated(*this, scaleFactor, imageSrc, imageTopLeft, imageDst, enableAlphaBlending);
 }
 
 
@@ -33,7 +35,8 @@ void PolymorphicEllipse::applyNearestNeighbor(
     mglass::float_type scaleFactor,
     const mglass::Image& imageSrc,
     mglass::Point<mglass::int_type> imageTopLeft,
-    mglass::Image& imageDst) const
+    mglass::Image& imageDst,
+    bool enableAlphaBlending) const
 {
     mglass::magnifiers::nearestNeighbor(*this, scaleFactor, imageSrc, imageTopLeft, imageDst);
 }
@@ -42,7 +45,8 @@ void PolymorphicEllipse::applyNearestNeighborInterpolated(
     mglass::float_type scaleFactor,
     const mglass::Image& imageSrc,
     mglass::Point<mglass::int_type> imageTopLeft,
-    mglass::Image& imageDst) const
+    mglass::Image& imageDst,
+    bool enableAlphaBlending) const
 {
     //mglass::magnifiers::nearestNeighborInterpolated(*this, scaleFactor, imageSrc, imageTopLeft, imageDst);
 }
