@@ -4,7 +4,7 @@
 #include "mglass/shape.h"
 #include "mglass/primitives.h"  // mglass::Point, mglass::float_type
 #include <utility>              // std::forward
-#include <cmath>                // std::min, std::max
+#include <algorithm>            // std::min, std::max
 
 
 namespace mglass::shapes

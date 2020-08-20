@@ -8,6 +8,15 @@
 #include <utility>              // std::forward
 
 
+namespace mglass::detail
+{
+    template<typename>
+    struct dependent_false
+    {
+        static constexpr bool value = false;
+    };
+}
+
 namespace mglass
 {
     using ShapeRectArea = RectArea<mglass::float_type>;
@@ -46,21 +55,22 @@ namespace mglass
     protected: // crtp methods implementation
         ShapeRectArea getBoundsImpl() const
         {
-            static_assert(false, "is not implemented");
+            static_assert(detail::dependent_false<Derived>::value, "is not implemented");
         }
 
         Point<mglass::float_type> getPointAtScaledImpl(
-            mglass::float_type scaleFactor,
-            Point<mglass::float_type> point
-        ) const
+            [[maybe_unused]] mglass::float_type scaleFactor,
+            [[maybe_unused]] Point<mglass::float_type> point) const
         {
-            static_assert(false, "is not implemented");
+            static_assert(detail::dependent_false<Derived>::value, "is not implemented");
         }
 
         template<typename ConsumerFunctor>
-        void rasterizeOntoImpl(IntegralRectArea rect, ConsumerFunctor&& consumer) const
+        void rasterizeOntoImpl(
+            [[maybe_unused]] IntegralRectArea rect,
+            [[maybe_unused]] ConsumerFunctor&& consumer) const
         {
-            static_assert(false, "is not implemented");
+            static_assert(detail::dependent_false<Derived>::value, "is not implemented");
         }
 
     protected:

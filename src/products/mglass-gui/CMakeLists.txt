@@ -22,7 +22,16 @@ if (NOT Qt5Widgets_FOUND)
     return()
 endif(NOT Qt5Widgets_FOUND)
 
-add_executable(mglass-gui WIN32
+# Retrieve the absolute path to qmake and then use that path to find
+# the binaries
+get_target_property(_qmake_executable Qt5::qmake IMPORTED_LOCATION)
+if ( (NOT _qmake_executable) OR (_qmake_executable STREQUAL "_qmake_executable-NOTFOUND") )
+    message(WARNING "Failed to find determine a directory of qmake's executable. mglass-gui target will not be generated.")
+    return()
+endif ( (NOT _qmake_executable) OR (_qmake_executable STREQUAL "_qmake_executable-NOTFOUND") )
+get_filename_component(_qt_bin_dir "${_qmake_executable}" DIRECTORY)
+
+add_executable(mglass-gui WIN32 MACOSX_BUNDLE
                "mainwindow.h"
                "mainwindow.cpp"
                "mainwindow.ui"
@@ -33,6 +42,9 @@ add_executable(mglass-gui WIN32
                "polymorphic_shapes.cpp"
                "main.cpp")
 
+# Use custom Info.plist file for macOS's bundles (it's for enabling high-dpi)
+set_target_properties(mglass-gui PROPERTIES MACOSX_BUNDLE_INFO_PLIST "${magnifying-glass_SOURCE_DIR}/src/build/Info.plist")
+
 enable_extra_compiler_warnings(mglass-gui)
 
 target_link_libraries(mglass-gui
@@ -41,19 +53,26 @@ target_link_libraries(mglass-gui
                       Qt5::Gui
                       Qt5::Widgets)
 
-# copy Qt dlls to exe build dir
-add_custom_command(TARGET mglass-gui POST_BUILD
-
-                   COMMAND "${CMAKE_COMMAND}" -E copy_if_different
-                   "$<TARGET_FILE:Qt5::Core>" "$<TARGET_FILE:Qt5::Gui>" "$<TARGET_FILE:Qt5::Widgets>" "$<TARGET_FILE_DIR:mglass-gui>")
-
 if (WIN32)
-    # QPA plugin(s)
+    find_program(WINDEPLOYQT_EXECUTABLE "windeployqt"
+                 HINTS "${_qt_bin_dir}"
+                 REQUIRED)
+
     add_custom_command(TARGET mglass-gui POST_BUILD
 
-                       COMMAND "${CMAKE_COMMAND}" -E make_directory
-                       "$<TARGET_FILE_DIR:mglass-gui>/platforms"
+                       COMMAND "${CMAKE_COMMAND}" -E env
+                       PATH="${_qt_bin_dir}" "${WINDEPLOYQT_EXECUTABLE}" "$<TARGET_FILE:mglass-gui>"
 
-                       COMMAND "${CMAKE_COMMAND}" -E copy_if_different
-                       "$<TARGET_FILE:Qt5::QWindowsIntegrationPlugin>" "$<TARGET_FILE_DIR:mglass-gui>/platforms/")
-endif(WIN32)
+                       COMMENT "Deploying via windeployqt...")
+elseif (APPLE)
+    find_program(MACDEPLOYQT_EXECUTABLE "macdeployqt"
+                 HINTS "${_qt_bin_dir}"
+                 REQUIRED)
+
+    add_custom_command(TARGET mglass-gui POST_BUILD
+
+                       COMMAND "${MACDEPLOYQT_EXECUTABLE}"
+                       "$<TARGET_FILE_DIR:mglass-gui>/../.." -always-overwrite
+
+                       COMMENT "Deploying via macdeployqt...")
+endif (WIN32)

@@ -5,6 +5,8 @@
 !*/
 !*/**/
 
+!build/Info.plist
+
 !*/**/*.md
 !*/**/*.txt
 
