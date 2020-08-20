@@ -12,13 +12,16 @@ namespace mglass::magnifiers
 {
     // imageDst will have size is getShapeIntegralBounds(shape).width x getShapeIntegralBounds(shape).height
     // if imageSrc and imageDst point to the same object, behaviour is undefined
+    //
+    // TODO: more detailed documentation
     template<typename ShapeImpl>
     void nearestNeighbor(
         const Shape<ShapeImpl>& shape,
         mglass::float_type scaleFactor,
         const Image& imageSrc,
         Point<mglass::int_type> imageTopLeft,
-        Image& imageDst)
+        Image& imageDst,
+        bool enableAlphaBlending = false)
     {
         //TODO: fix cases when shape is not fully inside imageRect
 
@@ -68,13 +71,16 @@ namespace mglass::magnifiers
 
     // imageDst will have size is getShapeIntegralBounds(shape).width x getShapeIntegralBounds(shape).height
     // if imageSrc and imageDst point to the same object, behaviour is undefineds
+    //
+    // TODO: more detailed documentation
     template<typename ShapeImpl>
     void nearestNeighborInterpolated(
         const Shape<ShapeImpl>& shape,
         mglass::float_type scaleFactor,
         const Image& imageSrc,
         Point<mglass::int_type> imageLeftTop,
-        Image& imageDst);
+        Image& imageDst,
+        bool enableAlphaBlending = false);
 }
 
 #endif // ndef MAGNIFYING_GLASS_MAGNIFIERS_H
