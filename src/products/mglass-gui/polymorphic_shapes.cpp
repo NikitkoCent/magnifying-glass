@@ -38,7 +38,7 @@ void PolymorphicEllipse::applyNearestNeighbor(
     mglass::Image& imageDst,
     bool enableAlphaBlending) const
 {
-    mglass::magnifiers::nearestNeighbor(*this, scaleFactor, imageSrc, imageTopLeft, imageDst);
+    mglass::magnifiers::nearestNeighbor(*this, scaleFactor, imageSrc, imageTopLeft, imageDst, enableAlphaBlending);
 }
 
 void PolymorphicEllipse::applyNearestNeighborInterpolated(
@@ -48,5 +48,5 @@ void PolymorphicEllipse::applyNearestNeighborInterpolated(
     mglass::Image& imageDst,
     bool enableAlphaBlending) const
 {
-    //mglass::magnifiers::nearestNeighborInterpolated(*this, scaleFactor, imageSrc, imageTopLeft, imageDst);
+    mglass::magnifiers::nearestNeighborInterpolated(*this, scaleFactor, imageSrc, imageTopLeft, imageDst, enableAlphaBlending);
 }
