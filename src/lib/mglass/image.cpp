@@ -12,7 +12,7 @@
 
 namespace mglass
 {
-    Image::Image(mglass::size_type width, mglass::size_type height, ARGB color)
+    Image::Image(size_type width, size_type height, ARGB color)
         : data_(width * height, color)
         , width_(height > 0 ? width : 0)
         , height_(width_ > 0 ? height : 0)
@@ -46,20 +46,21 @@ namespace mglass
 
         int widthSigned, heightSigned;
         int streamChannels;
-        const struct StbImageHolder
-        {
-            stbi_uc* data;
-            ~StbImageHolder()
-            {
-                if (data != nullptr)
-                {
-                    stbi_image_free(data);
-                    data = nullptr;
-                }
-            }
-        } image{ stbi_load_from_callbacks(&ioCallbacks, &stream, &widthSigned, &heightSigned, &streamChannels, STBI_rgb_alpha) };
 
-        if (image.data == nullptr)
+        using StbImageHolder = std::unique_ptr<stbi_uc[], decltype(&stbi_image_free)>;
+        const StbImageHolder image{
+            stbi_load_from_callbacks(
+                &ioCallbacks,
+                &stream,
+                &widthSigned,
+                &heightSigned,
+                &streamChannels,
+                STBI_rgb_alpha
+            ),
+            &stbi_image_free
+        };
+
+        if (!image)
             throw std::runtime_error(stbi_failure_reason());
 
         if (widthSigned < 0)
@@ -67,15 +68,15 @@ namespace mglass
         if (heightSigned < 0)
             throw std::runtime_error("image height < 0");
 
-        Image result{ static_cast<mglass::size_type>(widthSigned), static_cast<mglass::size_type>(heightSigned) };
+        Image result{ static_cast<size_type>(widthSigned), static_cast<size_type>(heightSigned) };
 
         int i = 0;
         for (ARGB& pixel : result.data_)
         {
-            pixel.r = image.data[i++];
-            pixel.g = image.data[i++];
-            pixel.b = image.data[i++];
-            pixel.a = image.data[i++];
+            pixel.r = image[i++];
+            pixel.g = image[i++];
+            pixel.b = image[i++];
+            pixel.a = image[i++];
         }
 
         return result;
@@ -92,7 +93,7 @@ namespace mglass
     }
 
 
-    void Image::setSize(mglass::size_type newWidth, mglass::size_type newHeight)
+    void Image::setSize(size_type newWidth, size_type newHeight)
     {
         width_ = newWidth;
         height_ = newHeight;
@@ -104,7 +105,7 @@ namespace mglass
     }
 
 
-    void Image::setPixelAt(mglass::size_type x, mglass::size_type y, ARGB color)
+    void Image::setPixelAt(size_type x, size_type y, ARGB color)
     {
         data_[y * width_ + x] = color;
     }
@@ -117,18 +118,18 @@ namespace mglass
     }
 
 
-    mglass::size_type Image::getWidth() const noexcept
+    size_type Image::getWidth() const noexcept
     {
         return width_;
     }
 
-    mglass::size_type Image::getHeight() const noexcept
+    size_type Image::getHeight() const noexcept
     {
         return height_;
     }
 
 
-    ARGB Image::getPixelAt(mglass::size_type x, mglass::size_type y) const
+    ARGB Image::getPixelAt(size_type x, size_type y) const
     {
         return data_[y * width_ + x];
     }
@@ -186,4 +187,4 @@ namespace mglass
 
         saveToPNGStream(fStream);
     }
-}
+} // namespace mglass

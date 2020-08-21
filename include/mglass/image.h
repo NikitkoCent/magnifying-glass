@@ -34,10 +34,8 @@ namespace mglass
     //                v
     class Image final
     {
-    public: // nested types
-
     public: // ctors/dtor
-        explicit Image(mglass::size_type width = 0, mglass::size_type height = 0, ARGB color = ARGB::black());
+        explicit Image(size_type width = 0, size_type height = 0, ARGB color = ARGB::black());
 
         // throws std::runtime_error if it is failed to parse the stream
         static Image fromPNGStream(std::istream& stream) noexcept(false);
@@ -49,17 +47,17 @@ namespace mglass
     public: // modifiers
         // content of the image is undefined after resizing
         // no memory re-allocations will be performed if (getWidth() * getHeight()) >= (newWidth * newHeight)
-        void setSize(mglass::size_type newWidth, mglass::size_type newHeight);
+        void setSize(size_type newWidth, size_type newHeight);
 
-        void setPixelAt(mglass::size_type x, mglass::size_type y, ARGB color);
+        void setPixelAt(size_type x, size_type y, ARGB color);
 
         void fill(ARGB color);
 
     public: // getters
-        mglass::size_type getWidth() const noexcept;
-        mglass::size_type getHeight() const noexcept;
+        [[nodiscard]] size_type getWidth() const noexcept;
+        [[nodiscard]] size_type getHeight() const noexcept;
 
-        ARGB getPixelAt(mglass::size_type x, mglass::size_type y) const;
+        [[nodiscard]] ARGB getPixelAt(size_type x, size_type y) const;
 
         void saveToPNGStream(std::ostream& stream) const;
 
@@ -69,9 +67,9 @@ namespace mglass
 
     private:
         std::vector<ARGB> data_;
-        mglass::size_type width_;
-        mglass::size_type height_;
+        size_type width_;
+        size_type height_;
     };
-}
+} // namespace mglass
 
 #endif // ndef MAGNIFYING_GLASS_IMAGE_H

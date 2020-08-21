@@ -3,10 +3,7 @@
 
 namespace mglass::shapes
 {
-    Ellipse::Ellipse(
-        mglass::Point<mglass::float_type> center,
-        mglass::float_type xAxis,
-        mglass::float_type yAxis) noexcept
+    Ellipse::Ellipse(Point<float_type> center, float_type xAxis, float_type yAxis) noexcept
         : center_(center)
         , xAxisLength_(xAxis)
         , yAxisLength_(yAxis)
@@ -22,14 +19,4 @@ namespace mglass::shapes
         return { topLeft, xAxisLength_, yAxisLength_ };
     }
 
-
-    Point<mglass::float_type> Ellipse::getPointAtScaledImpl(
-        mglass::float_type scaleFactor,
-        Point<mglass::float_type> point) const noexcept
-    {
-        const auto dx = point.x - center_.x;
-        const auto dy = point.y - center_.y;
-
-        return { center_.x + dx / scaleFactor, center_.y + dy / scaleFactor};
-    }
 } // namespace mglass::shapes
