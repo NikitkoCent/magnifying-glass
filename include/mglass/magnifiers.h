@@ -56,29 +56,29 @@ namespace mglass::magnifiers
         const IntegralRectArea imageSrcBounds{imageTopLeft, imageSrc.getWidth(), imageSrc.getHeight()};
         const IntegralRectArea intersectionBounds = shapeIntegralBounds.getIntersectionWith(imageSrcBounds);
 
-        imageDst.setSize(intersectionBounds.width, intersectionBounds.height);
+        imageDst.setSize(shapeIntegralBounds.width, shapeIntegralBounds.height);
         if ( (imageDst.getWidth() < 1) || (imageDst.getHeight() < 1) )
             return;
         imageDst.fill(ARGB::transparent());
 
-        const Point<float_type> boundsCenter = detail::getAreaCenter(intersectionBounds);
+        const Point<float_type> scaleCenter = detail::getAreaCenter(intersectionBounds);
         const mglass::float_type srcScaleFactor = 1 / scaleFactor;
 
         shape.rasterizeOnto(
             imageSrcBounds,
-            [srcScaleFactor, &imageSrc, imageSrcBounds, &imageDst, intersectionBounds, boundsCenter](const Point<mglass::int_type> rasterizePoint, float){
+            [srcScaleFactor, &imageSrc, imageSrcBounds, &imageDst, intersectionBounds, scaleCenter, shapeIntegralBounds](const Point<mglass::int_type> rasterizePoint, float){
                 assert( (rasterizePoint.x >= intersectionBounds.topLeft.x) );
                 assert( (rasterizePoint.y <= intersectionBounds.topLeft.y) );
 
-                const auto dstX = static_cast<mglass::size_type>(rasterizePoint.x - intersectionBounds.topLeft.x);
-                const auto dstY = static_cast<mglass::size_type>(intersectionBounds.topLeft.y - rasterizePoint.y);
+                const auto dstX = static_cast<mglass::size_type>(rasterizePoint.x - shapeIntegralBounds.topLeft.x);
+                const auto dstY = static_cast<mglass::size_type>(shapeIntegralBounds.topLeft.y - rasterizePoint.y);
 
                 assert( (dstX < imageDst.getWidth()) );
                 assert( (dstY < imageDst.getHeight()) );
 
                 auto srcPointFloat = detail::scaleVectorBy(
                     srcScaleFactor,
-                    boundsCenter,
+                    scaleCenter,
                     pointCast<mglass::float_type>(rasterizePoint)
                 );
                 srcPointFloat.x = std::floor(srcPointFloat.x);
