@@ -4,6 +4,7 @@
 #include <cstdint>      // std::int32_t
 #include <cstddef>      // std::size_t
 #include <type_traits>  // std::is_same_v
+#include <algorithm>    // std::min, std::max
 
 namespace mglass
 {
@@ -46,10 +47,38 @@ namespace mglass
         Point<CoordinateT> topLeft;
         SizeT width;
         SizeT height;
+
+
+        // if this and `other` don't intersect result will have width == 0 and height == 0
+        RectArea getIntersectionWith(const RectArea other) const noexcept
+        {
+            const CoordinateT resultLeftX = (std::max)(topLeft.x, other.topLeft.x);
+
+            const CoordinateT thisRightX = topLeft.x + static_cast<CoordinateT>(width);
+            const CoordinateT otherRightX = other.topLeft.x + static_cast<CoordinateT>(other.width);
+            const CoordinateT resultRightX = (std::min)(thisRightX, otherRightX);
+
+            if (resultLeftX >= resultRightX)
+                return { {0, 0}, 0, 0 };
+
+            const CoordinateT resultTopY = (std::min)(topLeft.y, other.topLeft.y);
+
+            const CoordinateT thisBottomY = topLeft.y - static_cast<CoordinateT>(height);
+            const CoordinateT otherBottomY = other.topLeft.y - static_cast<CoordinateT>(other.height);
+            const CoordinateT resultBottomY = (std::max)(thisBottomY, otherBottomY);
+
+            if (resultTopY <= resultBottomY)
+                return { {0, 0}, 0, 0 };
+
+            const auto resultWidth = static_cast<SizeT>(resultRightX - resultLeftX);
+            const auto resultHeight = static_cast<SizeT>(resultTopY - resultBottomY);
+
+            return { {resultLeftX, resultTopY}, resultWidth, resultHeight };
+        }
     };
 
     template<typename Coordinate, typename Size>
-    RectArea(Coordinate, Size, Size) -> RectArea<Coordinate, Size>;
+    RectArea(Point<Coordinate>, Size, Size) -> RectArea<Coordinate, Size>;
 
 
     using IntegralRectArea = RectArea<mglass::int_type, mglass::size_type>;

@@ -10,10 +10,20 @@
 
 namespace mglass::magnifiers
 {
+    namespace detail
+    {
+        Point<float_type> getAreaCenter(IntegralRectArea area) noexcept;
+
+        // returns a new end which distance to the `start` is scaleFactor * distance(`start`, `end`)
+        Point<float_type> scaleVectorBy(float_type scaleFactor, Point<float_type> start, Point<float_type> end);
+    } // namespace detail
+
+
     // imageDst will have size is getShapeIntegralBounds(shape).width x getShapeIntegralBounds(shape).height
     // if imageSrc and imageDst point to the same object, behaviour is undefined
     //
     // TODO: more detailed documentation
+    // TODO: alpha blending
     template<typename ShapeImpl>
     void nearestNeighbor(
         const Shape<ShapeImpl>& shape,
@@ -23,28 +33,40 @@ namespace mglass::magnifiers
         Image& imageDst,
         bool enableAlphaBlending = false)
     {
-        //TODO: fix cases when shape is not fully inside imageRect
+        const IntegralRectArea shapeIntegralBounds = getShapeIntegralBounds(shape);
+        const IntegralRectArea imageSrcBounds{imageTopLeft, imageSrc.getWidth(), imageSrc.getHeight()};
+        const IntegralRectArea intersectionBounds = shapeIntegralBounds.getIntersectionWith(imageSrcBounds);
 
-        const auto shapeIntegralBounds = getShapeIntegralBounds(shape);
-
-        imageDst.setSize(shapeIntegralBounds.width, shapeIntegralBounds.height);
+        imageDst.setSize(intersectionBounds.width, intersectionBounds.height);
         if ( (imageDst.getWidth() < 1) || (imageDst.getHeight() < 1) )
             return;
-
         imageDst.fill(ARGB::transparent());
 
-        const IntegralRectArea imageBounds{imageTopLeft, imageSrc.getWidth(), imageSrc.getHeight()};
+        const Point<float_type> boundsCenter = detail::getAreaCenter(intersectionBounds);
 
         shape.rasterizeOnto(
-            imageBounds,
-            [&shape, shapeIntegralBounds, scaleFactor, &imageSrc, imageTopLeft, &imageDst](const Point<mglass::int_type> rasterizePoint, float){
-                auto srcPointFloat = shape.getPointAtScaled(scaleFactor, pointCast<mglass::float_type>(rasterizePoint));
+            imageSrcBounds,
+            [scaleFactor, &imageSrc, &imageDst, intersectionBounds, boundsCenter](const Point<mglass::int_type> rasterizePoint, float){
+                assert( (rasterizePoint.x >= intersectionBounds.topLeft.x) );
+                assert( (rasterizePoint.y <= intersectionBounds.topLeft.y) );
+
+                const auto dstX = static_cast<mglass::size_type>(rasterizePoint.x - intersectionBounds.topLeft.x);
+                const auto dstY = static_cast<mglass::size_type>(intersectionBounds.topLeft.y - rasterizePoint.y);
+
+                assert( (dstX < imageDst.getWidth()) );
+                assert( (dstY < imageDst.getHeight()) );
+
+                auto srcPointFloat = detail::scaleVectorBy(
+                    scaleFactor,
+                    boundsCenter,
+                    pointCast<mglass::float_type>(rasterizePoint)
+                );
                 srcPointFloat.x = std::floor(srcPointFloat.x);
                 srcPointFloat.y = std::floor(srcPointFloat.y);
 
                 auto srcPointSigned = pointCast<mglass::int_type>(srcPointFloat);
-                srcPointSigned.x -= imageTopLeft.x;
-                srcPointSigned.y = imageTopLeft.y - srcPointSigned.y;
+                srcPointSigned.x -= intersectionBounds.topLeft.x;
+                srcPointSigned.y = intersectionBounds.topLeft.y - srcPointSigned.y;
 
                 if ((srcPointSigned.x < 0) || (srcPointSigned.y < 0))
                     return;
@@ -56,23 +78,15 @@ namespace mglass::magnifiers
 
                 const auto srcPixel = imageSrc.getPixelAt(srcX, srcY);
 
-                assert( (rasterizePoint.x >= shapeIntegralBounds.topLeft.x) );
-                assert( (rasterizePoint.y <= shapeIntegralBounds.topLeft.y) );
-
-                const auto dstX = static_cast<mglass::size_type>(rasterizePoint.x - shapeIntegralBounds.topLeft.x);
-                const auto dstY = static_cast<mglass::size_type>(shapeIntegralBounds.topLeft.y - rasterizePoint.y);
-
-                assert( (dstX < imageDst.getWidth()) );
-                assert( (dstY < imageDst.getHeight()) );
-
                 imageDst.setPixelAt(dstX, dstY, srcPixel);
         });
     }
 
     // imageDst will have size is getShapeIntegralBounds(shape).width x getShapeIntegralBounds(shape).height
-    // if imageSrc and imageDst point to the same object, behaviour is undefineds
+    // if imageSrc and imageDst point to the same object, behaviour is undefined
     //
     // TODO: more detailed documentation
+    // TODO: alpha blending
     template<typename ShapeImpl>
     void nearestNeighborInterpolated(
         const Shape<ShapeImpl>& shape,
