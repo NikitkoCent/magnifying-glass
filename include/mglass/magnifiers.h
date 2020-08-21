@@ -67,13 +67,13 @@ namespace mglass::magnifiers
         bool enableAlphaBlending = false)
     {
         const IntegralRectArea shapeIntegralBounds = getShapeIntegralBounds(shape);
-        const IntegralRectArea imageSrcBounds{imageTopLeft, imageSrc.getWidth(), imageSrc.getHeight()};
-        const IntegralRectArea intersectionBounds = shapeIntegralBounds.getIntersectionWith(imageSrcBounds);
 
         imageDst.setSize(shapeIntegralBounds.width, shapeIntegralBounds.height);
         if ( (imageDst.getWidth() < 1) || (imageDst.getHeight() < 1) )
             return;
         imageDst.fill(ARGB::transparent());
+
+        const IntegralRectArea imageSrcBounds{imageTopLeft, imageSrc.getWidth(), imageSrc.getHeight()};
 
         Point<float_type> scaleCenter = detail::getAreaCenter(shapeIntegralBounds);
         const auto imageTopLeftFloat = pointCast<float_type>(imageTopLeft);
@@ -85,9 +85,9 @@ namespace mglass::magnifiers
 
         shape.rasterizeOnto(
             imageSrcBounds,
-            [srcScaleFactor, &imageSrc, imageSrcBounds, &imageDst, intersectionBounds, scaleCenter, shapeIntegralBounds](const Point<mglass::int_type> rasterizePoint, float){
-                assert( (rasterizePoint.x >= intersectionBounds.topLeft.x) );
-                assert( (rasterizePoint.y <= intersectionBounds.topLeft.y) );
+            [srcScaleFactor, &imageSrc, imageSrcBounds, &imageDst, scaleCenter, shapeIntegralBounds](const Point<mglass::int_type> rasterizePoint, float){
+                assert( (rasterizePoint.x >= shapeIntegralBounds.topLeft.x) );
+                assert( (rasterizePoint.y <= shapeIntegralBounds.topLeft.y) );
 
                 const auto dstX = static_cast<mglass::size_type>(rasterizePoint.x - shapeIntegralBounds.topLeft.x);
                 const auto dstY = static_cast<mglass::size_type>(shapeIntegralBounds.topLeft.y - rasterizePoint.y);
