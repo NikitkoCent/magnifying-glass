@@ -6,6 +6,7 @@
 #include "mglass/image.h"
 #include <cmath>                // std::floor
 #include <cassert>              // assert
+#include <algorithm>            // std::min, std::max
 
 
 namespace mglass::magnifiers
@@ -24,6 +25,19 @@ namespace mglass::magnifiers
 
             result.x += halfWidth;
             result.y -= halfHeight;
+
+            return result;
+        }
+
+        Point<int_type> getAreaRightBottom(const IntegralRectArea area) noexcept
+        {
+            Point<int_type> result = area.topLeft;
+
+            if ((area.width < 1) || (area.height < 1))
+                return result;
+
+            result.x += static_cast<int_type>(area.width - 1);
+            result.y -= static_cast<int_type>(area.height - 1);
 
             return result;
         }
@@ -61,7 +75,12 @@ namespace mglass::magnifiers
             return;
         imageDst.fill(ARGB::transparent());
 
-        const Point<float_type> scaleCenter = detail::getAreaCenter(intersectionBounds);
+        Point<float_type> scaleCenter = detail::getAreaCenter(shapeIntegralBounds);
+        const auto imageTopLeftFloat = pointCast<float_type>(imageTopLeft);
+        const auto imageRightBottomFloat = pointCast<float_type>(detail::getAreaRightBottom(imageSrcBounds));
+        scaleCenter.x = (std::min)( (std::max)(scaleCenter.x, imageTopLeftFloat.x), imageRightBottomFloat.x );
+        scaleCenter.y = (std::min)( (std::max)(scaleCenter.y, imageRightBottomFloat.y), imageTopLeftFloat.y );
+
         const mglass::float_type srcScaleFactor = 1 / scaleFactor;
 
         shape.rasterizeOnto(
