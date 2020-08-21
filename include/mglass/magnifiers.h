@@ -12,10 +12,29 @@ namespace mglass::magnifiers
 {
     namespace detail
     {
-        Point<float_type> getAreaCenter(IntegralRectArea area) noexcept;
+        Point<float_type> getAreaCenter(const IntegralRectArea area) noexcept
+        {
+            auto result = pointCast<float_type>(area.topLeft);
+
+            if ((area.width < 1) || (area.height < 1))
+                return result;
+
+            const auto halfWidth = static_cast<float_type>(area.width - 1) / 2;
+            const auto halfHeight = static_cast<float_type>(area.height - 1) / 2;
+
+            result.x += halfWidth;
+            result.y -= halfHeight;
+
+            return result;
+        }
 
         // returns a new end which distance to the `start` is scaleFactor * distance(`start`, `end`)
-        Point<float_type> scaleVectorBy(float_type scaleFactor, Point<float_type> start, Point<float_type> end);
+        Point<float_type> scaleVectorBy(const float_type scaleFactor, const Point<float_type> start, Point<float_type> end)
+        {
+            end.x = start.x + (end.x - start.x) * scaleFactor;
+            end.y = start.y + (end.y - start.y) * scaleFactor;
+            return end;
+        }
     } // namespace detail
 
 
@@ -43,10 +62,11 @@ namespace mglass::magnifiers
         imageDst.fill(ARGB::transparent());
 
         const Point<float_type> boundsCenter = detail::getAreaCenter(intersectionBounds);
+        const mglass::float_type srcScaleFactor = 1 / scaleFactor;
 
         shape.rasterizeOnto(
             imageSrcBounds,
-            [scaleFactor, &imageSrc, &imageDst, intersectionBounds, boundsCenter](const Point<mglass::int_type> rasterizePoint, float){
+            [srcScaleFactor, &imageSrc, imageSrcBounds, &imageDst, intersectionBounds, boundsCenter](const Point<mglass::int_type> rasterizePoint, float){
                 assert( (rasterizePoint.x >= intersectionBounds.topLeft.x) );
                 assert( (rasterizePoint.y <= intersectionBounds.topLeft.y) );
 
@@ -57,7 +77,7 @@ namespace mglass::magnifiers
                 assert( (dstY < imageDst.getHeight()) );
 
                 auto srcPointFloat = detail::scaleVectorBy(
-                    scaleFactor,
+                    srcScaleFactor,
                     boundsCenter,
                     pointCast<mglass::float_type>(rasterizePoint)
                 );
@@ -65,8 +85,8 @@ namespace mglass::magnifiers
                 srcPointFloat.y = std::floor(srcPointFloat.y);
 
                 auto srcPointSigned = pointCast<mglass::int_type>(srcPointFloat);
-                srcPointSigned.x -= intersectionBounds.topLeft.x;
-                srcPointSigned.y = intersectionBounds.topLeft.y - srcPointSigned.y;
+                srcPointSigned.x -= imageSrcBounds.topLeft.x;
+                srcPointSigned.y = imageSrcBounds.topLeft.y - srcPointSigned.y;
 
                 if ((srcPointSigned.x < 0) || (srcPointSigned.y < 0))
                     return;
