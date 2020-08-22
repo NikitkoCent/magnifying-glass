@@ -64,7 +64,7 @@ if (WIN32)
                        COMMAND "${CMAKE_COMMAND}" -E env
                        PATH="${_qt_bin_dir}" "${WINDEPLOYQT_EXECUTABLE}" "$<TARGET_FILE:mglass-gui>"
 
-                       COMMENT "Deploying via windeployqt...")
+                       COMMENT "Deploying Qt (via windeployqt)...")
 elseif (APPLE)
     find_program(MACDEPLOYQT_EXECUTABLE "macdeployqt"
                  HINTS "${_qt_bin_dir}"
@@ -75,5 +75,19 @@ elseif (APPLE)
                        COMMAND "${MACDEPLOYQT_EXECUTABLE}"
                        "$<TARGET_FILE_DIR:mglass-gui>/../.." -always-overwrite
 
-                       COMMENT "Deploying via macdeployqt...")
-endif (WIN32)
+                       COMMENT "Deploying Qt (via macdeployqt)...")
+elseif (UNIX)
+    # QPA plugin(s)
+    add_custom_command(TARGET mglass-gui POST_BUILD
+
+                       COMMAND "${CMAKE_COMMAND}" -E make_directory
+                       "$<TARGET_FILE_DIR:mglass-gui>/platforms"
+
+                       COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+                       "$<TARGET_FILE:Qt5::QXcbIntegrationPlugin>" "$<TARGET_FILE_DIR:mglass-gui>/platforms/"
+
+                       COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+                       "$<TARGET_FILE:Qt5::Core>" "$<TARGET_FILE:Qt5::Gui>" "$<TARGET_FILE:Qt5::Widgets>" "$<TARGET_FILE_DIR:mglass-gui>"
+
+                       COMMENT "Deploying Qt...")
+endif (WIN32 || APPLE || UNIX)
