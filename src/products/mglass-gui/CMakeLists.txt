@@ -37,10 +37,10 @@ add_executable(mglass-gui WIN32 MACOSX_BUNDLE
                "mainwindow.ui"
                "imageview.h"
                "imageview.cpp"
-               "polymorphic_shape.h"
-               "polymorphic_shapes.h"
-               "polymorphic_shapes.cpp"
                "main.cpp")
+
+target_include_directories(mglass-gui
+                           PRIVATE "${magnifying-glass_SOURCE_DIR}/src/products/internal")
 
 # Use custom Info.plist file for macOS's bundles (it's for enabling high-dpi)
 set_target_properties(mglass-gui PROPERTIES MACOSX_BUNDLE_INFO_PLIST "${magnifying-glass_SOURCE_DIR}/src/build/Info.plist")
@@ -49,6 +49,7 @@ enable_extra_compiler_warnings(mglass-gui)
 
 target_link_libraries(mglass-gui
                       mglass
+                      mglassext
                       Qt5::Core
                       Qt5::Gui
                       Qt5::Widgets)

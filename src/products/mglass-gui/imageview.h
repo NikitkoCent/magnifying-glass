@@ -1,13 +1,13 @@
 #ifndef MGLASS_GUI_IMAGEVIEW_H
 #define MGLASS_GUI_IMAGEVIEW_H
 
-#include "polymorphic_shape.h"  // PolymorphicShape
-#include "mglass/mglass.h"      // mglass::*
+#include "mglass-extensions/polymorphic_shape.h"    // mglassext::PolymorphicShape
+#include "mglass/mglass.h"                          // mglass::*
 #include <QWidget>
 #include <QCursor>
 #include <QImage>
-#include <memory>               // std::unique_ptr
-#include <optional>             // std::optional
+#include <memory>                                   // std::unique_ptr
+#include <optional>                                 // std::optional
 
 
 class QVBoxLayout;
@@ -30,7 +30,7 @@ public: // modifiers
     void setImage(mglass::Image&& newImg);
 
     // throws std::invalid_argument if `newShape` does not own an object (!newShape returns true)
-    void setShape(std::unique_ptr<PolymorphicShape> newShape) noexcept(false);
+    void setShape(std::unique_ptr<mglassext::PolymorphicShape> newShape) noexcept(false);
 
     // throws std::invalid_argument exception if newScaleFactor is NaN or is not inside the range (0; +inf)
     void setScaleFactor(mglass::float_type newScaleFactor) noexcept(false);
@@ -67,7 +67,7 @@ private:
     static constexpr int imageBorders_ = 5;
 
 private:
-    std::unique_ptr<PolymorphicShape> mglassShape_;
+    std::unique_ptr<mglassext::PolymorphicShape> mglassShape_;
     mglass::float_type scaleFactor_;
     bool alphaBlendingIsEnabled_;
     bool interpolatingIsEnabled_;

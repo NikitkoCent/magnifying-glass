@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "imageview.h"
-#include "polymorphic_shapes.h" // PolymorphicEllipse, PolymorphicRectangle
+#include "mglass-extensions/polymorphic_shapes.h"   // mglassext::Polymorphic*
 #include <QObject>
 #include <QAction>
 #include <QToolButton>
@@ -11,7 +11,7 @@
 #include <QMessageBox>
 #include <QCheckBox>
 #include <QDebug>
-#include <exception>            // std::exception
+#include <exception>                                // std::exception
 
 
 MainWindow::MainWindow()
@@ -97,7 +97,7 @@ void MainWindow::onEllipseShapeSelectorTriggered()
 {
     qDebug() << __func__;
 
-    imageView_->setShape(std::make_unique<PolymorphicEllipse>(
+    imageView_->setShape(std::make_unique<mglassext::PolymorphicEllipse>(
         static_cast<mglass::float_type>(ui_->dxSpinBox->value()),
         static_cast<mglass::float_type>(ui_->dySpinBox->value())
     ));
@@ -107,7 +107,7 @@ void MainWindow::onRectShapeSelectorTriggered()
 {
     qDebug() << __func__;
 
-    imageView_->setShape(std::make_unique<PolymorphicRectangle>(
+    imageView_->setShape(std::make_unique<mglassext::PolymorphicRectangle>(
         static_cast<mglass::float_type>(ui_->dxSpinBox->value()),
         static_cast<mglass::float_type>(ui_->dySpinBox->value())
     ));
@@ -119,12 +119,12 @@ void MainWindow::onDxValueChanged(double newValue)
     qDebug() << __func__ << newValue;
 
     if (ui_->ellipseShapeButton->isChecked())
-        imageView_->setShape(std::make_unique<PolymorphicEllipse>(
+        imageView_->setShape(std::make_unique<mglassext::PolymorphicEllipse>(
             static_cast<mglass::float_type>(newValue),
             static_cast<mglass::float_type>(ui_->dySpinBox->value())
         ));
     else
-        imageView_->setShape(std::make_unique<PolymorphicRectangle>(
+        imageView_->setShape(std::make_unique<mglassext::PolymorphicRectangle>(
             static_cast<mglass::float_type>(newValue),
             static_cast<mglass::float_type>(ui_->dySpinBox->value())
         ));
@@ -135,12 +135,12 @@ void MainWindow::onDyValueChanged(double newValue)
     qDebug() << __func__ << newValue;
 
     if (ui_->ellipseShapeButton->isChecked())
-        imageView_->setShape(std::make_unique<PolymorphicEllipse>(
+        imageView_->setShape(std::make_unique<mglassext::PolymorphicEllipse>(
             static_cast<mglass::float_type>(ui_->dxSpinBox->value()),
             static_cast<mglass::float_type>(newValue)
         ));
     else
-        imageView_->setShape(std::make_unique<PolymorphicRectangle>(
+        imageView_->setShape(std::make_unique<mglassext::PolymorphicRectangle>(
             static_cast<mglass::float_type>(ui_->dxSpinBox->value()),
             static_cast<mglass::float_type>(newValue)
         ));

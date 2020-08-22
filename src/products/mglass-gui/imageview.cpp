@@ -47,7 +47,7 @@ void ImageView::setImage(mglass::Image&& newImg)
 }
 
 
-void ImageView::setShape(std::unique_ptr<PolymorphicShape> newShape) noexcept(false)
+void ImageView::setShape(std::unique_ptr<mglassext::PolymorphicShape> newShape) noexcept(false)
 {
     if (!newShape)
         throw std::invalid_argument("`newShape` does not own an object");
