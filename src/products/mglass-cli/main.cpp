@@ -55,6 +55,8 @@ int main(const int argc, char *argv[])
         const auto args = CmdArgs::parse(argc - 1, argv + 1);
         args.dumpValues(std::clog) << std::endl;
 
+        std::cout << "Processing..." << std::endl;
+
         mglass::Image outputImage;
 
         if (args.antialiasingIsEnabled)
@@ -74,11 +76,15 @@ int main(const int argc, char *argv[])
                 args.alphaBlendingIsEnabled
             );
 
+        std::cout << "Done. Saving results..." << std::endl;
+
         std::ofstream outputFile{args.outputFilePath, std::ios::binary};
         if (!outputFile.is_open())
             throw std::runtime_error{"Failed to open file for writing: \"" + args.outputFilePath + '\"'};
 
         outputImage.saveToPNGStream(outputFile);
+
+        std::cout << "Completed." << std::endl;
 
         return 0;
     }
@@ -340,12 +346,13 @@ std::ostream& CmdArgs::writeHelp(std::ostream& stream)
 std::ostream& CmdArgs::dumpValues(std::ostream& stream) const
 {
     return stream << "CmdArgs[" << this << "] values:\n"
-                     "\toutput file path: \"" << outputFilePath << "\"\n"
-                     "\tshape: " << shape->getIdentifier() << "\n"
-                     "\tshape center: (" << shape->getCenter().x << ", " << shape->getCenter().y << ")\n"
-                     "\tshape size: " << shape->getWidth() << "x" << shape->getHeight() << "\n"
-                     "\tantialiasing: " << (antialiasingIsEnabled ? "enabled" : "disabled") << "\n"
-                     "\talphablending: " << (alphaBlendingIsEnabled ? "enabled" : "disabled") << "\n"
-                     "\timage top left: (" << imageTopLeft.x << ", " << imageTopLeft.y << ")\n"
-                     "\timage size: " << image.getWidth() << "x" << image.getHeight();
+                     "\toutput file path: \"" << outputFilePath << "\";\n"
+                     "\t           shape: "   << shape->getIdentifier() << ";\n"
+                     "\t    shape center: ("  << shape->getCenter().x << ", " << shape->getCenter().y << ");\n"
+                     "\t      shape size: "   << shape->getWidth() << "x" << shape->getHeight() << ";\n"
+                     "\t    scale factor: "   << scaleFactor << ";\n"
+                     "\t    antialiasing: "   << (antialiasingIsEnabled ? "enabled" : "disabled") << ";\n"
+                     "\t   alphablending: "   << (alphaBlendingIsEnabled ? "enabled" : "disabled") << ";\n"
+                     "\t  image top left: ("  << imageTopLeft.x << ", " << imageTopLeft.y << ");\n"
+                     "\t      image size: "   << image.getWidth() << "x" << image.getHeight() << '.';
 }
