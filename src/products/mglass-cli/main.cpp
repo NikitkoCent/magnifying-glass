@@ -1,27 +1,20 @@
-#include "mglass/mglass.h"      // mglass::*
-#include "mglass/shapes.h"      // mglass::shapes*
-#include "mglass/magnifiers.h"  // mglass::magnifiers::*
-#include <iostream>             // std::cin, std::cout, std::ostream
-#include <fstream>              // std::ifstream, std::ofstream
-#include <string>               // std::string
-#include <string_view>          // std::string_view
-#include <exception>            // std::exception
-#include <stdexcept>            // std::runtime_error, std::system_error
-#include <optional>             // std::optional
-#include <variant>              // std::variant, std::visit
-//#include <charconv>             // std::from_chars
-#include <cstdlib>              // std::strtof
-#include <utility>              // std::move
-#include <type_traits>          // std::remove_reference_t, std::remove_cv_t
-
-
-// TODO: use polymorphic shapes
+#include "mglass/mglass.h"                          // mglass::*
+#include "mglass-extensions/polymorphic_shapes.h"   // mglassext::Polymorphic*
+#include <iostream>                                 // std::cin, std::cout, std::ostream
+#include <fstream>                                  // std::ifstream, std::ofstream
+#include <string>                                   // std::string, std::string_literals
+#include <string_view>                              // std::string_view
+#include <exception>                                // std::exception
+#include <stdexcept>                                // std::runtime_error, std::system_error
+#include <optional>                                 // std::optional
+#include <memory>                                   // std::unique_ptr
+//#include <charconv>                                 // std::from_chars
+#include <cstdlib>                                  // std::strtof
+#include <utility>                                  // std::move
 
 
 using mglass::float_type;
 using mglass::int_type;
-
-namespace shapes { using namespace mglass::shapes; }
 
 
 struct CmdArgs
@@ -38,9 +31,9 @@ struct CmdArgs
 
 
     mglass::Image image;
-    // TODO: move to std::filepath
+    // TODO: replace by std::filepath
     std::string outputFilePath;
-    std::variant<shapes::Ellipse, shapes::Rectangle> shape;
+    std::unique_ptr<mglassext::PolymorphicShape> shape;
     float_type scaleFactor = 2;
     bool antialiasingIsEnabled = false;
     bool alphaBlendingIsEnabled = false;
@@ -64,29 +57,22 @@ int main(const int argc, char *argv[])
 
         mglass::Image outputImage;
 
-        std::visit(
-            [&args, &outputImage](const auto& shape){
-                if (args.antialiasingIsEnabled)
-                    mglass::magnifiers::nearestNeighborInterpolated(
-                        shape,
-                        args.scaleFactor,
-                        args.image,
-                        args.imageTopLeft,
-                        outputImage,
-                        args.alphaBlendingIsEnabled
-                    );
-                else
-                    mglass::magnifiers::nearestNeighbor(
-                        shape,
-                        args.scaleFactor,
-                        args.image,
-                        args.imageTopLeft,
-                        outputImage,
-                        args.alphaBlendingIsEnabled
-                    );
-            },
-            args.shape
-        );
+        if (args.antialiasingIsEnabled)
+            args.shape->applyNearestNeighborAntiAliased(
+                args.scaleFactor,
+                args.image,
+                args.imageTopLeft,
+                outputImage,
+                args.alphaBlendingIsEnabled
+            );
+        else
+            args.shape->applyNearestNeighbor(
+                args.scaleFactor,
+                args.image,
+                args.imageTopLeft,
+                outputImage,
+                args.alphaBlendingIsEnabled
+            );
 
         std::ofstream outputFile{args.outputFilePath, std::ios::binary};
         if (!outputFile.is_open())
@@ -115,9 +101,9 @@ CmdArgs CmdArgs::parse(const int argc, char **argv) noexcept(false)
 {
     using namespace std::string_literals;
 
-    // TODO: move to std::filepath
+    // TODO: replace by std::filepath
     std::optional<decltype(CmdArgs::outputFilePath)> outputFilePath                 = std::nullopt;
-    std::optional<decltype(CmdArgs::shape)> shape                                   = std::nullopt;
+    std::unique_ptr<mglassext::PolymorphicShape> shape                              = {};
     std::optional<float_type> shapeWidth                                            = std::nullopt;
     std::optional<float_type> shapeHeight                                           = std::nullopt;
     std::optional<float_type> shapeCenterX                                          = std::nullopt;
@@ -141,14 +127,14 @@ CmdArgs CmdArgs::parse(const int argc, char **argv) noexcept(false)
         }
         else if (arg.substr(0, 8) == "--shape=")
         {
-            if (shape.has_value())
+            if (shape != nullptr)
                 throw std::runtime_error("`--shape` parameter occurs several times");
 
             const auto shapeIdentifier = arg.substr(8);
             if (shapeIdentifier == "ellipse")
-                shape.emplace(shapes::Ellipse{});
+                shape = std::make_unique<mglassext::PolymorphicEllipse>();
             else if (shapeIdentifier == "rectangle")
-                shape.emplace(shapes::Rectangle{});
+                shape = std::make_unique<mglassext::PolymorphicRectangle>();
             else
                 throw std::runtime_error("unknown value of the `--shape` parameter \""s
                                          .append(shapeIdentifier)
@@ -290,7 +276,7 @@ CmdArgs CmdArgs::parse(const int argc, char **argv) noexcept(false)
 
     if (!outputFilePath.has_value())
         throw std::runtime_error("`--output` parameter was not set");
-    if (!shape.has_value())
+    if (shape == nullptr)
         throw std::runtime_error("`--shape` parameter was not set");
     if (!shapeWidth.has_value())
         throw std::runtime_error("`--dx` parameter was not set");
@@ -300,23 +286,18 @@ CmdArgs CmdArgs::parse(const int argc, char **argv) noexcept(false)
     CmdArgs result;
     result.image                  = mglass::Image::fromPNGFile(argv[argc - 1]);
     result.outputFilePath         = std::move(*outputFilePath);
+    result.shape                  = std::move(shape);
     result.imageTopLeft.x         = imageTopLeftX.value_or(0);
     result.imageTopLeft.y         = imageTopLeftY.value_or(0);
     result.scaleFactor            = scaleFactor.value_or(2);
     result.antialiasingIsEnabled  = antialiasingIsEnabled;
     result.alphaBlendingIsEnabled = alphaBlendingIsEnabled;
 
-    // TODO: implement
-    //std::visit(
-    //    [&shapeWidth, &shapeHeight, &shapeCenterX, &shapeCenterY, &result](auto& shape) {
-    //        using ShapeT = std::remove_cv_t< std::remove_reference_t<decltype(shape)> >;
-    //
-    //        const auto centerX = shapeCenterX.value_or();
-    //
-    //        result.shape.emplace<ShapeT>();
-    //    },
-    //    *shape
-    //);
+    const auto imageCenter =
+        mglass::IntegralRectArea{ result.imageTopLeft, result.image.getWidth(), result.image.getHeight() }.getCenter();
+
+    result.shape->moveCenterTo(shapeCenterX.value_or(imageCenter.x), shapeCenterY.value_or(imageCenter.y));
+    result.shape->setSize(*shapeWidth, *shapeHeight);
 
     return result;
 }
@@ -358,14 +339,11 @@ std::ostream& CmdArgs::writeHelp(std::ostream& stream)
 
 std::ostream& CmdArgs::dumpValues(std::ostream& stream) const
 {
-    // TODO: dump shape's width, height, center
     return stream << "CmdArgs[" << this << "] values:\n"
                      "\toutput file path: \"" << outputFilePath << "\"\n"
-                     "\tshape: " << (std::holds_alternative<shapes::Ellipse>(shape)
-                                    ? "shape"
-                                    : std::holds_alternative<shapes::Rectangle>(shape)
-                                    ? "rectangle"
-                                    : "unknown") << "\n"
+                     "\tshape: " << shape->getIdentifier() << "\n"
+                     "\tshape center: (" << shape->getCenter().x << ", " << shape->getCenter().y << ")\n"
+                     "\tshape size: " << shape->getWidth() << "x" << shape->getHeight() << "\n"
                      "\tantialiasing: " << (antialiasingIsEnabled ? "enabled" : "disabled") << "\n"
                      "\talphablending: " << (alphaBlendingIsEnabled ? "enabled" : "disabled") << "\n"
                      "\timage top left: (" << imageTopLeft.x << ", " << imageTopLeft.y << ")\n"
