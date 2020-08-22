@@ -11,6 +11,7 @@
 //#include <charconv>                                 // std::from_chars
 #include <cstdlib>                                  // std::strtof
 #include <utility>                                  // std::move
+#include <cmath>                                    // std::isnan
 
 
 using mglass::float_type;
@@ -195,6 +196,9 @@ CmdArgs CmdArgs::parse(const int argc, char **argv) noexcept(false)
                 if ( s = std::strtof(sStr.data(), &parseEnd); parseEnd != (sStr.data() + sStr.length()) )
                     throw std::runtime_error("failed to parse value of the `--scale` parameter");
             }
+
+            if ((s <= 0) || (std::isnan(s)))
+                throw std::runtime_error("value of the `--scale` parameter is not inside the range (0; +inf)");
 
             scaleFactor = s;
         }
