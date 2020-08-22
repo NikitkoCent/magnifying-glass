@@ -40,6 +40,12 @@ namespace mglass
             static_cast<const Derived*>(this)->rasterizeOntoImpl(rect, std::forward<ConsumerFunctor>(consumer));
         }
 
+    protected: // ctors/dtor
+        constexpr Shape() noexcept = default;
+
+        // dtor will not be invoked by the library
+        ~Shape() noexcept = default;
+
     protected: // crtp methods implementation
         [[nodiscard]] ShapeRectArea getBoundsImpl() const
         {
@@ -53,10 +59,6 @@ namespace mglass
         {
             static_assert(detail::dependent_false_v<Derived>, "is not implemented");
         }
-
-    protected:
-        // dtor will not be invoked by the library
-        ~Shape() noexcept = default;
     };
 
 
