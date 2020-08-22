@@ -175,7 +175,7 @@ void ImageView::updateMagnifierCursor(int posX, int posY)
     // TODO: crop mglassWholeImg_ to visibleRegion(). It can be implemented via smth like mglass::ImageView
 
     if (interpolatingIsEnabled_)
-        mglassShape_->applyNearestNeighborInterpolated(scaleFactor_, *mglassWholeImg_, mglassImgPos, mglassMagnifiedImg_, alphaBlendingIsEnabled_);
+        mglassShape_->applyNearestNeighborAntiAliased(scaleFactor_, *mglassWholeImg_, mglassImgPos, mglassMagnifiedImg_, alphaBlendingIsEnabled_);
     else
         mglassShape_->applyNearestNeighbor(scaleFactor_, *mglassWholeImg_, mglassImgPos, mglassMagnifiedImg_, alphaBlendingIsEnabled_);
 
