@@ -35,7 +35,7 @@ private slots: // dx, dy slots
 
 private slots: // options slots
     void onScaleFactorValueChanged(double newValue);
-    void onInterpolateOptionStateChanged(int newState);
+    void onAntiAliasingOptionStateChanged(int newState);
     void onAlphaBlendingOptionStateChanged(int newState);
 
 private:

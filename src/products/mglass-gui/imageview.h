@@ -38,13 +38,13 @@ public: // modifiers
     void enableAlphaBlending();
     void disableAlphaBlending();
 
-    void enableInterpolating();
-    void disableInterpolating();
+    void enableAntiAliasing();
+    void disableAntiAliasing();
 
 public: // getters
     mglass::float_type getScaleFactor() const noexcept { return scaleFactor_; }
     bool isAlphaBlendingEnabled() const noexcept { return alphaBlendingIsEnabled_; }
-    bool isInterpolatingEnabled() const noexcept { return interpolatingIsEnabled_; }
+    bool isAntiAliasingEnabled() const noexcept { return antiAliasingIsEnabled_; }
 
 private: // mouse events handlers
     void mouseMoveEvent(QMouseEvent* e) override;
@@ -70,7 +70,7 @@ private:
     std::unique_ptr<mglassext::PolymorphicShape> mglassShape_;
     mglass::float_type scaleFactor_;
     bool alphaBlendingIsEnabled_;
-    bool interpolatingIsEnabled_;
+    bool antiAliasingIsEnabled_;
     bool magnifierIsDisplayed_;
     QVBoxLayout* layout_;
     QLabel* imageLabel_;

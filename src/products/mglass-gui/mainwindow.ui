@@ -264,9 +264,9 @@
            <number>5</number>
           </property>
           <item>
-           <widget class="QCheckBox" name="interpolateCheckBox">
+           <widget class="QCheckBox" name="antiAliasingCheckBox">
             <property name="text">
-             <string>Interpolate</string>
+             <string>Anti-aliasing</string>
             </property>
            </widget>
           </item>

@@ -42,7 +42,7 @@ MainWindow::MainWindow()
 
     { // options bindings
         QObject::connect(ui_->scaleFactorSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &MainWindow::onScaleFactorValueChanged);
-        QObject::connect(ui_->interpolateCheckBox, &QCheckBox::stateChanged, this, &MainWindow::onInterpolateOptionStateChanged);
+        QObject::connect(ui_->antiAliasingCheckBox, &QCheckBox::stateChanged, this, &MainWindow::onAntiAliasingOptionStateChanged);
         QObject::connect(ui_->alphaBlendingCheckBox, &QCheckBox::stateChanged, this, &MainWindow::onAlphaBlendingOptionStateChanged);
     }
 
@@ -155,17 +155,17 @@ void MainWindow::onScaleFactorValueChanged(double newValue)
 }
 
 
-void MainWindow::onInterpolateOptionStateChanged(int newState)
+void MainWindow::onAntiAliasingOptionStateChanged(int newState)
 {
     qDebug() << __func__ << newState;
 
     switch (newState)
     {
         case Qt::Checked:
-            imageView_->enableInterpolating();
+            imageView_->enableAntiAliasing();
             break;
         default:
-            imageView_->disableInterpolating();
+            imageView_->disableAntiAliasing();
             break;
     }
 }
