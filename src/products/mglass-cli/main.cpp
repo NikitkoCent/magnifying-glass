@@ -125,7 +125,9 @@ CmdArgs CmdArgs::parse(const int argc, char **argv) noexcept(false)
     {
         const std::string_view arg = argv[i];
 
-        if (arg.substr(0, 9) == "--output=")
+        if (arg == "--help")
+            writeHelp(std::cout) << std::endl;
+        else if (arg.substr(0, 9) == "--output=")
         {
             if (outputFilePath.has_value())
                 throw std::runtime_error("`--output` parameter occurs several times");
