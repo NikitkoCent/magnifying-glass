@@ -9,13 +9,6 @@
 
 namespace mglass
 {
-    namespace detail
-    {
-        template<typename...>
-        inline constexpr bool dependent_false_v = false;
-    } // namespace detail
-
-
     using ShapeRectArea = RectArea<float_type>;
 
 

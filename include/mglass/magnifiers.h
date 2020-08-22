@@ -12,10 +12,6 @@ namespace mglass::magnifiers
 {
     namespace detail
     {
-        Point<float_type> getAreaCenter(IntegralRectArea area) noexcept;
-
-        Point<int_type> getAreaRightBottom(IntegralRectArea area) noexcept;
-
         // if `point` is not inside the `area` returns a closest point is inside it
         // otherwise returns `point`
         Point<float_type> restrictPointBy(IntegralRectArea area, Point<float_type> point);
@@ -47,7 +43,7 @@ namespace mglass::magnifiers
         imageDst.fill(ARGB::transparent());
 
         const IntegralRectArea imageSrcBounds{imageTopLeft, imageSrc.getWidth(), imageSrc.getHeight()};
-        const auto scaleCenter = detail::restrictPointBy(imageSrcBounds, detail::getAreaCenter(shapeIntegralBounds));
+        const auto scaleCenter = detail::restrictPointBy(imageSrcBounds, shapeIntegralBounds.getCenter());
         const float_type srcScaleFactor = 1 / scaleFactor;
 
         shape.rasterizeOnto(
@@ -98,7 +94,7 @@ namespace mglass::magnifiers
         const Shape<ShapeImpl>& shape,
         float_type scaleFactor,
         const Image& imageSrc,
-        Point<int_type> imageLeftTop,
+        Point<int_type> imageTopLeft,
         Image& imageDst,
         bool enableAlphaBlending = false)
     {
