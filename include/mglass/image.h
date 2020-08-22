@@ -41,7 +41,7 @@ namespace mglass
         static Image fromPNGStream(std::istream& stream) noexcept(false);
 
         // throws std::runtime_error if it is failed to open/parse the file
-        // TODO: move to std::filesystem::path
+        // TODO: replace by std::filesystem::path
         static Image fromPNGFile(std::string_view filePath) noexcept(false);
 
     public: // modifiers
@@ -62,7 +62,7 @@ namespace mglass
         void saveToPNGStream(std::ostream& stream) const;
 
         // throws std::runtime_error if it is failed to save this to the file at `filePath`
-        // TODO: move to std::filesystem::path
+        // TODO: replace by std::filesystem::path
         void saveToPNGFile(std::string_view filePath) const noexcept(false);
 
     private:
