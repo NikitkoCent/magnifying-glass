@@ -9,7 +9,7 @@
 #include <optional>                                 // std::optional
 #include <memory>                                   // std::unique_ptr
 //#include <charconv>                                 // std::from_chars
-#include <cstdlib>                                  // std::strtof
+#include <cstdlib>                                  // std::strtof, std::strtol
 #include <utility>                                  // std::move
 #include <cmath>                                    // std::isnan
 
@@ -118,8 +118,8 @@ CmdArgs CmdArgs::parse(const int argc, char **argv) noexcept(false)
     std::optional<decltype(CmdArgs::scaleFactor)> scaleFactor                       = std::nullopt;
     bool antialiasingIsEnabled                                                      = false;
     bool alphaBlendingIsEnabled                                                     = false;
-    std::optional<float_type> imageTopLeftX                                         = std::nullopt;
-    std::optional<float_type> imageTopLeftY                                         = std::nullopt;
+    std::optional<int_type> imageTopLeftX                                           = std::nullopt;
+    std::optional<int_type> imageTopLeftY                                           = std::nullopt;
 
     for (int i = 0; i < (argc - 1); ++i)
     {
@@ -258,7 +258,7 @@ CmdArgs CmdArgs::parse(const int argc, char **argv) noexcept(false)
 
             {
                 char* parseEnd;
-                if ( imx = std::strtof(imxStr.data(), &parseEnd); parseEnd != (imxStr.data() + imxStr.length()) )
+                if ( imx = std::strtol(imxStr.data(), &parseEnd, 10); parseEnd != (imxStr.data() + imxStr.length()) )
                     throw std::runtime_error("failed to parse value of the `--imx` parameter");
             }
 
@@ -274,7 +274,7 @@ CmdArgs CmdArgs::parse(const int argc, char **argv) noexcept(false)
 
             {
                 char* parseEnd;
-                if ( imy = std::strtof(imyStr.data(), &parseEnd); parseEnd != (imyStr.data() + imyStr.length()) )
+                if ( imy = std::strtol(imyStr.data(), &parseEnd, 10); parseEnd != (imyStr.data() + imyStr.length()) )
                     throw std::runtime_error("failed to parse value of the `--imy` parameter");
             }
 
