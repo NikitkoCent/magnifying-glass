@@ -46,8 +46,8 @@ jobs:
         with:
           name: mglass-windows
           path: |
-            build/src/products/mglass-gui/Release
-            build/src/products/mglass-cli/Release
+            build/src/products/mglass-cli/Release/mglass-cli.exe
+            build/src/products/mglass-gui/Release/
 
   ubuntu-1604_gcc_840:
     name: "Artifacts and tests; Ubuntu 16.04, GCC 8.4.0, Qt 5.14.1, Release+Debug"
