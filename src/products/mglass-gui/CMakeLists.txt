@@ -87,24 +87,24 @@ elseif (UNIX)
     add_custom_command(TARGET mglass-gui POST_BUILD
 
                        COMMAND "${CMAKE_COMMAND}" -E make_directory
-                       "$<TARGET_FILE_DIR:mglass-gui>/AppDir/usr/bin"
+                       "$<TARGET_FILE_DIR:mglass-gui>/mglass-gui.AppDir/usr/bin"
 
                        COMMAND "${CMAKE_COMMAND}" -E make_directory
-                       "$<TARGET_FILE_DIR:mglass-gui>/AppDir/usr/lib"
+                       "$<TARGET_FILE_DIR:mglass-gui>/mglass-gui.AppDir/usr/lib"
 
                        COMMAND "${CMAKE_COMMAND}" -E make_directory
-                       "$<TARGET_FILE_DIR:mglass-gui>/AppDir/usr/share/applications"
+                       "$<TARGET_FILE_DIR:mglass-gui>/mglass-gui.AppDir/usr/share/applications"
 
                        COMMAND "${CMAKE_COMMAND}" -E copy_if_different
-                       "$<TARGET_FILE:mglass-gui>" "$<TARGET_FILE_DIR:mglass-gui>/AppDir/usr/bin/"
+                       "$<TARGET_FILE:mglass-gui>" "$<TARGET_FILE_DIR:mglass-gui>/mglass-gui.AppDir/usr/bin/"
 
                        COMMAND "${CMAKE_COMMAND}" -E copy_if_different
-                       "${magnifying-glass_SOURCE_DIR}/src/build/mglass-gui.desktop" "$<TARGET_FILE_DIR:mglass-gui>/AppDir/usr/share/applications/"
+                       "${magnifying-glass_SOURCE_DIR}/src/build/mglass-gui.desktop" "$<TARGET_FILE_DIR:mglass-gui>/mglass-gui.AppDir/usr/share/applications/"
 
-                       COMMAND "${LINUXDEPLOYQT_EXECUTABLE}" "$<TARGET_FILE_DIR:mglass-gui>/AppDir/usr/share/applications/mglass-gui.desktop"
+                       COMMAND "${LINUXDEPLOYQT_EXECUTABLE}" "$<TARGET_FILE_DIR:mglass-gui>/mglass-gui.AppDir/usr/share/applications/mglass-gui.desktop"
                        -always-overwrite
                        -bundle-non-qt-libs
-                       -verbose=3
+                       -verbose=2
 
                        COMMENT "Deploying Qt, making AppDir bundle (via linuxdeployqt)...")
 
