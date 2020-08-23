@@ -77,7 +77,10 @@ jobs:
           ctest -C Debug --verbose
       - name: Build (Release)
         run: |
+          ls -al
           cd build
+          ls -al
+          echo $PATH
           rm -rf ./*
           cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=gcc-8 -DCMAKE_CXX_COMPILER=g++-8 -DCMAKE_PREFIX_PATH="${Qt5_DIR}" ..
           cmake --build .
