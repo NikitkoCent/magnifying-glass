@@ -26,7 +26,7 @@ endif(NOT Qt5Widgets_FOUND)
 # the binaries
 get_target_property(_qmake_executable Qt5::qmake IMPORTED_LOCATION)
 if ( (NOT _qmake_executable) OR (_qmake_executable STREQUAL "_qmake_executable-NOTFOUND") )
-    message(WARNING "Failed to find determine a directory of qmake's executable. mglass-gui target will not be generated.")
+    message(WARNING "Failed to determine a directory of qmake's executable. mglass-gui target will not be generated.")
     return()
 endif ( (NOT _qmake_executable) OR (_qmake_executable STREQUAL "_qmake_executable-NOTFOUND") )
 get_filename_component(_qt_bin_dir "${_qmake_executable}" DIRECTORY)
@@ -107,20 +107,4 @@ elseif (UNIX)
                        -verbose=2
 
                        COMMENT "Deploying Qt, making AppDir bundle (via linuxdeployqt)...")
-
-#    # TODO: rename libQt5<...>.so.5.14.1 to libQt5<...>.so.5
-#    # TODO: CI build requires libicu
-#
-#    add_custom_command(TARGET mglass-gui POST_BUILD
-#
-#                       COMMAND "${CMAKE_COMMAND}" -E make_directory
-#                       "$<TARGET_FILE_DIR:mglass-gui>/platforms"
-#
-#                       COMMAND "${CMAKE_COMMAND}" -E copy_if_different
-#                       "$<TARGET_FILE:Qt5::QXcbIntegrationPlugin>" "$<TARGET_FILE_DIR:mglass-gui>/platforms/"
-#
-#                       COMMAND "${CMAKE_COMMAND}" -E copy_if_different
-#                       "$<TARGET_FILE:Qt5::Core>" "$<TARGET_FILE:Qt5::Gui>" "$<TARGET_FILE:Qt5::Widgets>" "$<TARGET_FILE_DIR:mglass-gui>"
-#
-#                       COMMENT "Deploying Qt...")
 endif (WIN32)
