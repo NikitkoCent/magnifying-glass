@@ -77,19 +77,50 @@ elseif (APPLE)
 
                        COMMENT "Deploying Qt (via macdeployqt)...")
 elseif (UNIX)
-    # TODO: rename libQt5<...>.so.5.14.1 to libQt5<...>.so.5
-    # TODO: CI build requires libicu
+    find_program(LINUXDEPLOYQT_EXECUTABLE "linuxdeployqt-continuous-x86_64.AppImage")
+
+    if ( (NOT LINUXDEPLOYQT_EXECUTABLE) OR (LINUXDEPLOYQT_EXECUTABLE STREQUAL "LINUXDEPLOYQT_EXECUTABLE-NOTFOUND") )
+        message(WARNING "`linuxdeployqt-continuous-x86_64.AppImage` utility was not found. Dependencies of the mglass-gui target will not be deployed.")
+        return()
+    endif ()
 
     add_custom_command(TARGET mglass-gui POST_BUILD
 
                        COMMAND "${CMAKE_COMMAND}" -E make_directory
-                       "$<TARGET_FILE_DIR:mglass-gui>/platforms"
+                       "$<TARGET_FILE_DIR:mglass-gui>/AppDir/usr/bin"
+
+                       COMMAND "${CMAKE_COMMAND}" -E make_directory
+                       "$<TARGET_FILE_DIR:mglass-gui>/AppDir/usr/lib"
+
+                       COMMAND "${CMAKE_COMMAND}" -E make_directory
+                       "$<TARGET_FILE_DIR:mglass-gui>/AppDir/usr/share/applications"
 
                        COMMAND "${CMAKE_COMMAND}" -E copy_if_different
-                       "$<TARGET_FILE:Qt5::QXcbIntegrationPlugin>" "$<TARGET_FILE_DIR:mglass-gui>/platforms/"
+                       "$<TARGET_FILE:mglass-gui>" "$<TARGET_FILE_DIR:mglass-gui>/AppDir/usr/bin/"
 
                        COMMAND "${CMAKE_COMMAND}" -E copy_if_different
-                       "$<TARGET_FILE:Qt5::Core>" "$<TARGET_FILE:Qt5::Gui>" "$<TARGET_FILE:Qt5::Widgets>" "$<TARGET_FILE_DIR:mglass-gui>"
+                       "${magnifying-glass_SOURCE_DIR}/src/build/mglass-gui.desktop" "$<TARGET_FILE_DIR:mglass-gui>/AppDir/usr/share/applications/"
 
-                       COMMENT "Deploying Qt...")
+                       COMMAND "${LINUXDEPLOYQT_EXECUTABLE}" "$<TARGET_FILE_DIR:mglass-gui>/AppDir/usr/share/applications/mglass-gui.desktop"
+                       -always-overwrite
+                       -bundle-non-qt-libs
+                       -verbose=3
+
+                       COMMENT "Deploying Qt, making AppDir bundle (via linuxdeployqt)...")
+
+#    # TODO: rename libQt5<...>.so.5.14.1 to libQt5<...>.so.5
+#    # TODO: CI build requires libicu
+#
+#    add_custom_command(TARGET mglass-gui POST_BUILD
+#
+#                       COMMAND "${CMAKE_COMMAND}" -E make_directory
+#                       "$<TARGET_FILE_DIR:mglass-gui>/platforms"
+#
+#                       COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+#                       "$<TARGET_FILE:Qt5::QXcbIntegrationPlugin>" "$<TARGET_FILE_DIR:mglass-gui>/platforms/"
+#
+#                       COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+#                       "$<TARGET_FILE:Qt5::Core>" "$<TARGET_FILE:Qt5::Gui>" "$<TARGET_FILE:Qt5::Widgets>" "$<TARGET_FILE_DIR:mglass-gui>"
+#
+#                       COMMENT "Deploying Qt...")
 endif (WIN32)

@@ -60,6 +60,12 @@ jobs:
       - uses: jurplel/install-qt-action@v2.8.0
         with:
           version: '5.14.1'
+      - name: Install linuxdeployqt
+        run: |
+          wget -c -nv "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
+          chmod a+x linuxdeployqt-continuous-x86_64.AppImage
+          export PATH=`pwd`:$PATH
+          linuxdeployqt-continuous-x86_64.AppImage -version
       - name: Build (Debug)
         run: |
           cd build
@@ -82,7 +88,7 @@ jobs:
       - name: Pack artifacts
         run: |
           cd build/src/products
-          tar -cvf mglass-linux.tar mglass-cli/mglass-cli mglass-gui/mglass-gui mglass-gui/platforms/ mglass-gui/*.so.*
+          tar -cvf mglass-linux.tar mglass-cli/mglass-cli mglass-gui/mglass-gui/AppDir
       - name: Upload artifacts
         uses: actions/upload-artifact@v2.1.4
         with:
