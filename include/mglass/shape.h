@@ -43,6 +43,7 @@ namespace mglass
         [[nodiscard]] ShapeRectArea getBoundsImpl() const
         {
             static_assert(detail::dependent_false_v<Derived>, "is not implemented");
+            return {};
         }
 
         template<typename ConsumerFunctor>
