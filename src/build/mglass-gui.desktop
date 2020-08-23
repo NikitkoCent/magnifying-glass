@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=mglass-gui
+Comment=Qt application-example of using the mglass library
+Exec=mglass-gui
+Categories=Graphics;

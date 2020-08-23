@@ -6,6 +6,7 @@
 !*/**/
 
 !build/Info.plist
+!build/mglass-gui.desktop
 
 !*/**/*.md
 !*/**/*.txt
