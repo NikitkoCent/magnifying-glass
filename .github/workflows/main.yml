@@ -64,7 +64,7 @@ jobs:
         run: |
           wget -c -nv "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
           chmod a+x linuxdeployqt-continuous-x86_64.AppImage
-          export PATH=`pwd`:$PATH
+          echo "::add-path::./"
           linuxdeployqt-continuous-x86_64.AppImage -version
       - name: Build (Debug)
         run: |
