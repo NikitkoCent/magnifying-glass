@@ -77,7 +77,9 @@ elseif (APPLE)
 
                        COMMENT "Deploying Qt (via macdeployqt)...")
 elseif (UNIX)
-    # QPA plugin(s)
+    # TODO: rename libQt5<...>.so.5.14.1 to libQt5<...>.so.5
+    # TODO: CI build requires libicu
+
     add_custom_command(TARGET mglass-gui POST_BUILD
 
                        COMMAND "${CMAKE_COMMAND}" -E make_directory
@@ -90,4 +92,4 @@ elseif (UNIX)
                        "$<TARGET_FILE:Qt5::Core>" "$<TARGET_FILE:Qt5::Gui>" "$<TARGET_FILE:Qt5::Widgets>" "$<TARGET_FILE_DIR:mglass-gui>"
 
                        COMMENT "Deploying Qt...")
-endif (WIN32 || APPLE || UNIX)
+endif (WIN32)

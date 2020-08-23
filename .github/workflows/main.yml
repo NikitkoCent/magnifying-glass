@@ -82,7 +82,7 @@ jobs:
       - name: Pack artifacts
         run: |
           cd build/src/products
-          tar -cvf mglass-linux.tar mglass-cli/mglass-cli mglass-gui/
+          tar -cvf mglass-linux.tar mglass-cli/mglass-cli mglass-gui/mglass-gui mglass-gui/platforms/ mglass-gui/*.so.*
       - name: Upload artifacts
         uses: actions/upload-artifact@v2.1.4
         with:
