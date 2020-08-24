@@ -39,34 +39,46 @@ namespace mglass::magnifiers
 
 
             // `pixelBottomLeft` must be { std::floor(`point`.x), std::floor(`point`.y) }
-            static InterpolationInfo calculateFor(const Point<float_type> point, const Point<float_type> pixelBottomLeft)
+            static InterpolationInfo calculateFor()
             {
-                const Point<float_type> pixelTopRight { pixelBottomLeft.x + 1, pixelBottomLeft.y + 1 };
-
-                // let's make "pixel" around the `point`
-                const Point<float_type> fakePixelBottomLeft { point.x - 0.5f, point.y - 0.5f };
-                const Point<float_type> fakePixelTopRight { point.x + 0.5f, point.y + 0.5f };
-
-                const float_type beforeLeftLength = (std::max)(pixelBottomLeft.x - fakePixelBottomLeft.x, 0.f);
-                const float_type beforeBottomLength = (std::max)(pixelBottomLeft.y - fakePixelBottomLeft.y, 0.f);
-
-                const float_type afterRightLength = (std::max)(fakePixelTopRight.x - pixelTopRight.x, 0.f);
-                const float_type afterTopLength = (std::max)(fakePixelTopRight.y - pixelTopRight.y, 0.f);
-
-                const float_type insideXLength = 1 - std::abs(fakePixelTopRight.x - pixelTopRight.x);
-                const float_type insideYLength = 1 - std::abs(fakePixelTopRight.y - pixelTopRight.y);
+                //const Point<float_type> pixelTopRight { pixelBottomLeft.x + 1, pixelBottomLeft.y + 1 };
+                //
+                //// let's make "pixel" around the `point`
+                //const Point<float_type> fakePixelBottomLeft { point.x - 0.5f, point.y - 0.5f };
+                //const Point<float_type> fakePixelTopRight { point.x + 0.5f, point.y + 0.5f };
+                //
+                //const float_type beforeLeftLength = (std::max)(pixelBottomLeft.x - fakePixelBottomLeft.x, 0.f);
+                //const float_type beforeBottomLength = (std::max)(pixelBottomLeft.y - fakePixelBottomLeft.y, 0.f);
+                //
+                //const float_type afterRightLength = (std::max)(fakePixelTopRight.x - pixelTopRight.x, 0.f);
+                //const float_type afterTopLength = (std::max)(fakePixelTopRight.y - pixelTopRight.y, 0.f);
+                //
+                //const float_type insideXLength = 1 - std::abs(fakePixelTopRight.x - pixelTopRight.x);
+                //const float_type insideYLength = 1 - std::abs(fakePixelTopRight.y - pixelTopRight.y);
+                //
+                //InterpolationInfo result{};
+                //
+                //result.neighborsParts[0] = beforeLeftLength * afterTopLength;
+                //result.neighborsParts[1] = insideXLength    * afterTopLength;
+                //result.neighborsParts[2] = afterRightLength * afterTopLength;
+                //result.neighborsParts[3] = beforeLeftLength * insideYLength;
+                //result.neighborsParts[4] = insideXLength    * insideYLength;
+                //result.neighborsParts[5] = afterRightLength * insideYLength;
+                //result.neighborsParts[6] = beforeLeftLength * beforeBottomLength;
+                //result.neighborsParts[7] = insideXLength    * beforeBottomLength;
+                //result.neighborsParts[8] = afterRightLength * beforeBottomLength;
 
                 InterpolationInfo result{};
 
-                result.neighborsParts[0] = beforeLeftLength * afterTopLength;
-                result.neighborsParts[1] = insideXLength    * afterTopLength;
-                result.neighborsParts[2] = afterRightLength * afterTopLength;
-                result.neighborsParts[3] = beforeLeftLength * insideYLength;
-                result.neighborsParts[4] = insideXLength    * insideYLength;
-                result.neighborsParts[5] = afterRightLength * insideYLength;
-                result.neighborsParts[6] = beforeLeftLength * beforeBottomLength;
-                result.neighborsParts[7] = insideXLength    * beforeBottomLength;
-                result.neighborsParts[8] = afterRightLength * beforeBottomLength;
+                result.neighborsParts[0] = 1.f / 16;
+                result.neighborsParts[1] = 2.f / 16;
+                result.neighborsParts[2] = 1.f / 16;
+                result.neighborsParts[3] = 2.f / 16;
+                result.neighborsParts[4] = 4.f / 16;
+                result.neighborsParts[5] = 2.f / 16;
+                result.neighborsParts[6] = 1.f / 16;
+                result.neighborsParts[7] = 2.f / 16;
+                result.neighborsParts[8] = 1.f / 16;
 
                 return result;
             }
@@ -164,7 +176,7 @@ namespace mglass::magnifiers
             {
                 if constexpr (EnableInterpolation)
                 {
-                    return InterpolationInfo::calculateFor(point, pixelPosFloat).applyTo(pixelPos, imageSrc);
+                    return InterpolationInfo::calculateFor().applyTo(pixelPos, imageSrc);
                 }
                 else
                 {
@@ -174,7 +186,7 @@ namespace mglass::magnifiers
         };
 
 
-        template<bool EnableAlphaBlending, bool EnableInterpolating, typename ShapeImpl>
+        template<bool EnableAlphaBlending, bool EnableInterpolation, typename ShapeImpl>
         void nearestNeighbor(
             const Shape<ShapeImpl>& shape,
             float_type scaleFactor,
@@ -195,7 +207,7 @@ namespace mglass::magnifiers
 
             shape.rasterizeOnto(
                 imageSrcBounds,
-                RasterizationConsumer<EnableAlphaBlending, EnableInterpolating>{
+                RasterizationConsumer<EnableAlphaBlending, EnableInterpolation>{
                     srcScaleFactor,
                     imageSrc,
                     imageSrcBounds,
