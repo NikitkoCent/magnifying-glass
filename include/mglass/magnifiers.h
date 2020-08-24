@@ -26,14 +26,7 @@ namespace mglass::magnifiers
         // TODO: abstract algorithms of interpolation (smth like 'interface Interpolator').
         struct InterpolationInfo
         {
-            // Avoiding floating-point computations via replacing float_type by uint_fast32_t.
-            // Floating-point numbers like 123.456 will be stored as 123456 of uint_fast32_t through multiplying by 10^5.
-            // It will allow to keep up to 5 decimal places (10^5).
-            static constexpr std::uint_fast32_t multiplier = 100000;
-            static constexpr float_type multiplierF = multiplier;
-            static constexpr std::uint_fast32_t halfMultiplier = multiplier / 2;
-
-            // how much parts of the neighbors pixels should be taken into account (range [0; 1] * multiplier)
+            // how much parts of the neighbors pixels should be taken into account (range [0; 1])
             // [0] is about (center.x - 1, center.y + 1)
             // [1] is about (center.x    , center.y + 1)
             // [2] is about (center.x + 1, center.y + 1)
@@ -43,7 +36,7 @@ namespace mglass::magnifiers
             // [6] is about (center.x - 1, center.y - 1)
             // [7] is about (center.x    , center.y - 1)
             // [8] is about (center.x + 1, center.y - 1)
-            std::uint_fast32_t neighborsParts[9];
+            float_type neighborsParts[9];
 
 
             // `pixelBottomLeft` must be { std::floor(`point`.x), std::floor(`point`.y) }
@@ -66,39 +59,22 @@ namespace mglass::magnifiers
 
                 InterpolationInfo result{};
 
-                result.neighborsParts[0] = static_cast<std::uint_fast32_t>(beforeLeftLength * afterTopLength * multiplierF);
-                result.neighborsParts[1] = static_cast<std::uint_fast32_t>(insideXLength    * afterTopLength * multiplierF);
-                result.neighborsParts[2] = static_cast<std::uint_fast32_t>(afterRightLength * afterTopLength * multiplierF);
-                result.neighborsParts[3] = static_cast<std::uint_fast32_t>(beforeLeftLength * insideYLength * multiplierF);
-                result.neighborsParts[4] = static_cast<std::uint_fast32_t>(insideXLength    * insideYLength * multiplierF);
-                result.neighborsParts[5] = static_cast<std::uint_fast32_t>(afterRightLength * insideYLength * multiplierF);
-                result.neighborsParts[6] = static_cast<std::uint_fast32_t>(beforeLeftLength * beforeBottomLength * multiplierF);
-                result.neighborsParts[7] = static_cast<std::uint_fast32_t>(insideXLength    * beforeBottomLength * multiplierF);
-                result.neighborsParts[8] = static_cast<std::uint_fast32_t>(afterRightLength * beforeBottomLength * multiplierF);
+                result.neighborsParts[0] = beforeLeftLength * afterTopLength;
+                result.neighborsParts[1] = insideXLength    * afterTopLength;
+                result.neighborsParts[2] = afterRightLength * afterTopLength;
+                result.neighborsParts[3] = beforeLeftLength * insideYLength;
+                result.neighborsParts[4] = insideXLength    * insideYLength;
+                result.neighborsParts[5] = afterRightLength * insideYLength;
+                result.neighborsParts[6] = beforeLeftLength * beforeBottomLength;
+                result.neighborsParts[7] = insideXLength    * beforeBottomLength;
+                result.neighborsParts[8] = afterRightLength * beforeBottomLength;
 
                 return result;
             }
 
             ARGB applyTo(const Point<size_type> pixelPos, const Image& imageSrc) const
             {
-                struct ARGB128
-                {
-                    std::uint_fast32_t a;
-                    std::uint_fast32_t r;
-                    std::uint_fast32_t g;
-                    std::uint_fast32_t b;
-
-                    ARGB128& operator=(ARGB c) noexcept
-                    {
-                        a = c.a;
-                        r = c.r;
-                        g = c.g;
-                        b = c.b;
-                        return *this;
-                    }
-                };
-
-                std::array<ARGB128, 9> srcPixels; // 4th is center
+                std::array<ARGB, 9> srcPixels; // 4th is center
 
                 const auto [centerX, centerY] = pixelPos;
                 const auto minX = (std::max<size_type>)(centerX, 1) - 1;
@@ -116,23 +92,19 @@ namespace mglass::magnifiers
                 srcPixels[7] = imageSrc.getPixelAt(centerX, maxY);
                 srcPixels[8] = imageSrc.getPixelAt(maxX,    maxY);
 
-                //std::uint_fast32_t fA = 0;
-                std::uint_fast32_t r32 = 0;
-                std::uint_fast32_t g32 = 0;
-                std::uint_fast32_t b32 = 0;
+                //float_type fA = 0;
+                float_type fR = 0;
+                float_type fG = 0;
+                float_type fB = 0;
 
                 for (unsigned i = 0; i < 9; ++i)
                 {
-                    r32 += neighborsParts[i] * srcPixels[i].r;
-                    g32 += neighborsParts[i] * srcPixels[i].g;
-                    b32 += neighborsParts[i] * srcPixels[i].b;
+                    fR += neighborsParts[i] * static_cast<float_type>(srcPixels[i].r);
+                    fG += neighborsParts[i] * static_cast<float_type>(srcPixels[i].g);
+                    fB += neighborsParts[i] * static_cast<float_type>(srcPixels[i].b);
                 }
 
-                r32 = (r32 / multiplier) + ( (r32 % multiplier) < halfMultiplier ? 0 : 1 );
-                g32 = (g32 / multiplier) + ( (g32 % multiplier) < halfMultiplier ? 0 : 1 );
-                b32 = (b32 / multiplier) + ( (b32 % multiplier) < halfMultiplier ? 0 : 1 );
-
-                ARGB result{255, static_cast<std::uint8_t>(r32), static_cast<std::uint8_t>(g32), static_cast<std::uint8_t>(b32)};
+                ARGB result{255, static_cast<std::uint8_t>(fR), static_cast<std::uint8_t>(fG), static_cast<std::uint8_t>(fB)};
                 return result;
             }
         };
