@@ -12,6 +12,12 @@ namespace mglass
     using ShapeRectArea = RectArea<float_type>;
 
 
+    // The Shape interface provides definitions for objects that represent some form of magnifying glass
+    //  (e.g. rectangle or ellipse magnifying glass).
+    //
+    // Probably there is no need for CRTP. It should be replaced by C++20 concepts
+    //  but we don't have compilers support C++20 well yet.
+    // Another way is to make some traits like is_shape<T> but it is less-readable.
     template<typename Derived>
     struct Shape
     {
