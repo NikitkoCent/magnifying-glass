@@ -23,6 +23,7 @@ namespace mglass::magnifiers
         Point<float_type> scaleVectorBy(float_type scaleFactor, Point<float_type> start, Point<float_type> end) noexcept;
 
 
+        // TODO: abstract algorithms of interpolation (smth like 'interface Interpolator').
         struct InterpolationInfo
         {
             // how much parts of the neighbors pixels should be taken into account (range [0; 1])
