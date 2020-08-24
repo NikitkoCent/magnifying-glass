@@ -26,17 +26,12 @@ namespace mglass::magnifiers
         // TODO: abstract algorithms of interpolation (smth like 'interface Interpolator').
         struct InterpolationInfo
         {
-            // Avoiding floating-point computations via replacing float_type by int_fast32_t.
-            // Floating-point numbers like 123.456 will be stored as 1234560 of int_fast32_t through multiplying by 10^4.
-            // It will allow to keep up to 4 decimal places (10^4).
-            static constexpr std::int_fast32_t multiplier = 10000;
+            // Avoiding floating-point computations via replacing float_type by uint_fast32_t.
+            // Floating-point numbers like 123.456 will be stored as 123456 of uint_fast32_t through multiplying by 10^5.
+            // It will allow to keep up to 5 decimal places (10^5).
+            static constexpr std::uint_fast32_t multiplier = 100000;
             static constexpr float_type multiplierF = multiplier;
-            static constexpr std::int_fast32_t halfMultiplier = multiplier / 2;
-            static constexpr std::int_fast32_t multiplierSqrt = 100;
-            static constexpr float_type multiplierSqrtF = multiplierSqrt;
-            static constexpr std::int_fast32_t halfMultiplierSqrt = multiplierSqrt / 2;
-
-            static_assert((multiplierSqrt * multiplierSqrt == multiplier));
+            static constexpr std::uint_fast32_t halfMultiplier = multiplier / 2;
 
             // how much parts of the neighbors pixels should be taken into account (range [0; 1] * multiplier)
             // [0] is about (center.x - 1, center.y + 1)
@@ -48,45 +43,38 @@ namespace mglass::magnifiers
             // [6] is about (center.x - 1, center.y - 1)
             // [7] is about (center.x    , center.y - 1)
             // [8] is about (center.x + 1, center.y - 1)
-            std::int_fast32_t neighborsParts[9];
+            std::uint_fast32_t neighborsParts[9];
 
 
             // `pixelBottomLeft` must be { std::floor(`point`.x), std::floor(`point`.y) }
             static InterpolationInfo calculateFor(const Point<float_type> point, const Point<float_type> pixelBottomLeft)
             {
-                const auto pointInt = pointCast<std::int_fast32_t>(
-                    Point{point.x * multiplierSqrtF, point.y * multiplierSqrtF}
-                );
-                const auto pixelBottomLeftInt = pointCast<std::int_fast32_t>(
-                    Point{pixelBottomLeft.x * multiplierSqrtF, pixelBottomLeft.y * multiplierSqrtF}
-                );
-
-                const Point<std::int_fast32_t> pixelTopRight { pixelBottomLeftInt.x + multiplierSqrt, pixelBottomLeftInt.y + multiplierSqrt };
+                const Point<float_type> pixelTopRight { pixelBottomLeft.x + 1, pixelBottomLeft.y + 1 };
 
                 // let's make "pixel" around the `point`
-                const Point<std::int_fast32_t> fakePixelBottomLeft { pointInt.x - halfMultiplierSqrt, pointInt.y - halfMultiplierSqrt };
-                const Point<std::int_fast32_t> fakePixelTopRight { pointInt.x + halfMultiplierSqrt, pointInt.y + halfMultiplierSqrt };
+                const Point<float_type> fakePixelBottomLeft { point.x - 0.5f, point.y - 0.5f };
+                const Point<float_type> fakePixelTopRight { point.x + 0.5f, point.y + 0.5f };
 
-                const auto beforeLeftLength = (std::max<std::int_fast32_t>)(pixelBottomLeftInt.x - fakePixelBottomLeft.x, 0);
-                const auto beforeBottomLength = (std::max<std::int_fast32_t>)(pixelBottomLeftInt.y - fakePixelBottomLeft.y, 0);
+                const float_type beforeLeftLength = (std::max)(pixelBottomLeft.x - fakePixelBottomLeft.x, 0.f);
+                const float_type beforeBottomLength = (std::max)(pixelBottomLeft.y - fakePixelBottomLeft.y, 0.f);
 
-                const auto afterRightLength = (std::max<std::int_fast32_t>)(fakePixelTopRight.x - pixelTopRight.x, 0);
-                const auto afterTopLength = (std::max<std::int_fast32_t>)(fakePixelTopRight.y - pixelTopRight.y, 0);
+                const float_type afterRightLength = (std::max)(fakePixelTopRight.x - pixelTopRight.x, 0.f);
+                const float_type afterTopLength = (std::max)(fakePixelTopRight.y - pixelTopRight.y, 0.f);
 
-                const std::int_fast32_t insideXLength = multiplierSqrt - std::abs(fakePixelTopRight.x - pixelTopRight.x);
-                const std::int_fast32_t insideYLength = multiplierSqrt - std::abs(fakePixelTopRight.y - pixelTopRight.y);
+                const float_type insideXLength = 1 - std::abs(fakePixelTopRight.x - pixelTopRight.x);
+                const float_type insideYLength = 1 - std::abs(fakePixelTopRight.y - pixelTopRight.y);
 
                 InterpolationInfo result{};
 
-                result.neighborsParts[0] = beforeLeftLength * afterTopLength;
-                result.neighborsParts[1] = insideXLength    * afterTopLength;
-                result.neighborsParts[2] = afterRightLength * afterTopLength;
-                result.neighborsParts[3] = beforeLeftLength * insideYLength;
-                result.neighborsParts[4] = insideXLength    * insideYLength;
-                result.neighborsParts[5] = afterRightLength * insideYLength;
-                result.neighborsParts[6] = beforeLeftLength * beforeBottomLength;
-                result.neighborsParts[7] = insideXLength    * beforeBottomLength;
-                result.neighborsParts[8] = afterRightLength * beforeBottomLength;
+                result.neighborsParts[0] = static_cast<std::uint_fast32_t>(beforeLeftLength * afterTopLength * multiplierF);
+                result.neighborsParts[1] = static_cast<std::uint_fast32_t>(insideXLength    * afterTopLength * multiplierF);
+                result.neighborsParts[2] = static_cast<std::uint_fast32_t>(afterRightLength * afterTopLength * multiplierF);
+                result.neighborsParts[3] = static_cast<std::uint_fast32_t>(beforeLeftLength * insideYLength * multiplierF);
+                result.neighborsParts[4] = static_cast<std::uint_fast32_t>(insideXLength    * insideYLength * multiplierF);
+                result.neighborsParts[5] = static_cast<std::uint_fast32_t>(afterRightLength * insideYLength * multiplierF);
+                result.neighborsParts[6] = static_cast<std::uint_fast32_t>(beforeLeftLength * beforeBottomLength * multiplierF);
+                result.neighborsParts[7] = static_cast<std::uint_fast32_t>(insideXLength    * beforeBottomLength * multiplierF);
+                result.neighborsParts[8] = static_cast<std::uint_fast32_t>(afterRightLength * beforeBottomLength * multiplierF);
 
                 return result;
             }
@@ -95,10 +83,10 @@ namespace mglass::magnifiers
             {
                 struct ARGB128
                 {
-                    std::int_fast32_t a;
-                    std::int_fast32_t r;
-                    std::int_fast32_t g;
-                    std::int_fast32_t b;
+                    std::uint_fast32_t a;
+                    std::uint_fast32_t r;
+                    std::uint_fast32_t g;
+                    std::uint_fast32_t b;
 
                     ARGB128& operator=(ARGB c) noexcept
                     {
@@ -128,10 +116,10 @@ namespace mglass::magnifiers
                 srcPixels[7] = imageSrc.getPixelAt(centerX, maxY);
                 srcPixels[8] = imageSrc.getPixelAt(maxX,    maxY);
 
-                //std::int_fast32_t a32 = 0;
-                std::int_fast32_t r32 = 0;
-                std::int_fast32_t g32 = 0;
-                std::int_fast32_t b32 = 0;
+                //std::uint_fast32_t fA = 0;
+                std::uint_fast32_t r32 = 0;
+                std::uint_fast32_t g32 = 0;
+                std::uint_fast32_t b32 = 0;
 
                 for (unsigned i = 0; i < 9; ++i)
                 {
