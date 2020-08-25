@@ -142,7 +142,7 @@ namespace mglass::magnifiers::detail
         }
 
         return {
-            255,
+            srcPixels[4].a,
             static_cast<std::uint8_t>(fR),
             static_cast<std::uint8_t>(fG),
             static_cast<std::uint8_t>(fB)
