@@ -57,6 +57,7 @@ namespace mglass::shapes
             const auto a2 = (xAxisLength_ * xAxisLength_) / 4;
             // b^2 == (yAxisLength_ / 2) ^ 2
             const auto b2 = (yAxisLength_ * yAxisLength_) / 4;
+            const auto b2Inversed = 1_flt / b2;
 
             const auto xStart = thisIntegralBounds.topLeft.x;
             const auto xEnd = thisIntegralBounds.topLeft.x + static_cast<int_type>(thisIntegralBounds.width);
@@ -66,8 +67,9 @@ namespace mglass::shapes
 
             for (int_type yUnaligned = yStart; yUnaligned > yEnd; --yUnaligned)
             {
-                // TODO: optimize (yUnaligned < rectYMin)
-                if ((yUnaligned < rectYMin) || (yUnaligned > rectYMax))
+                if (yUnaligned < rectYMin)
+                    break;
+                if (yUnaligned > rectYMax)
                     continue;
 
                 // b^2 * x^2 + a^2 * y^2 <= a^2 * b^2
@@ -76,28 +78,32 @@ namespace mglass::shapes
                 // equals to
                 // b^2 * x^2 <= -a^2(y^2 - b^2)
                 // equals to
-                // b^2 * x^2 <= a^2(b^2 - y^2) // TODO: make x^2 <= a^2 - y^2 / b^2
+                // b^2 * x^2 <= a^2(b^2 - y^2)
+                // equals to
+                // x^2 <= a^2/b^2 * (b^2 - y^2)
+                // equals to
+                // x^2 <= a^2 * 1/b^2 * (b^2 - y^2)
 
                 // +0.5 is for moving to the pixel's center
                 const float_type y = (static_cast<float_type>(yUnaligned) + 0.5_flt) - center_.y;
                 const float_type y2 = y * y;
 
-                const float_type rightPart = a2 * (b2 - y2);
+                const float_type rightPart = a2 * b2Inversed * (b2 - y2);
 
                 for (int_type xUnaligned = xStart; xUnaligned < xEnd; ++xUnaligned)
                 {
-                    // TODO: optimize (xUnaligned > rectXMax)
-                    if ((xUnaligned < rectXMin) || (xUnaligned > rectXMax))
+                    if (xUnaligned > rectXMax)
+                        break;
+                    if (xUnaligned < rectXMin)
                         continue;
 
                     // +0.5 is for moving to the pixel's center
                     const float_type x = (static_cast<float_type>(xUnaligned) + 0.5_flt) - center_.x;
+                    const float_type x2 = x * x;
 
-                    const float_type b2x2 = b2 * (x * x);
-
-                    if (b2x2 <= rightPart)
+                    if (x2 <= rightPart)
                     {
-                        const float_type pointDensity = 1.8_flt - b2x2 / rightPart;
+                        const float_type pointDensity = 1.8_flt - x2 / rightPart;
 
                         (void)std::forward<ConsumerFunctor>(consumer)(
                             { xUnaligned, yUnaligned },
