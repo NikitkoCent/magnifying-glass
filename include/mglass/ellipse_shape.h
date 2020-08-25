@@ -42,9 +42,9 @@ namespace mglass::shapes
                 return;
 
             const auto rectXMin = rect.topLeft.x;
-            const auto rectXMax = rect.topLeft.x + static_cast<int_type>(rect.width) - 1;
+            const auto rectXMax = rect.topLeft.x + static_cast<int_type>(rect.width - 1);
 
-            const auto rectYMin = rect.topLeft.y - static_cast<int_type>(rect.height) + 1;
+            const auto rectYMin = rect.topLeft.y - static_cast<int_type>(rect.height - 1);
             const auto rectYMax = rect.topLeft.y;
 
             // TODO: optimize the algorithm:
@@ -63,6 +63,7 @@ namespace mglass::shapes
 
             for (int_type yUnaligned = yStart; yUnaligned > yEnd; --yUnaligned)
             {
+                // TODO: optimize (yUnaligned < rectYMin)
                 if ((yUnaligned < rectYMin) || (yUnaligned > rectYMax))
                     continue;
 
@@ -74,17 +75,19 @@ namespace mglass::shapes
                 // equals to
                 // b^2 * x^2 <= a^2(b^2 - y^2)
 
-                const auto y = static_cast<float_type>(yUnaligned) - center_.y;
+                // +0.5 is for moving to center of the pixel
+                const auto y = (static_cast<float_type>(yUnaligned) + 0.5) - center_.y;
                 const auto y2 = static_cast<float_type>(y * y);
 
                 const auto rightPart = a2 * (b2 - y2);
 
                 for (int_type xUnaligned = xStart; xUnaligned < xEnd; ++xUnaligned)
                 {
+                    // TODO: optimize (xUnaligned > rectXMax)
                     if ((xUnaligned < rectXMin) || (xUnaligned > rectXMax))
                         continue;
 
-                    const auto x = static_cast<float_type>(xUnaligned) - center_.x;
+                    const auto x = (static_cast<float_type>(xUnaligned) + 0.5) - center_.x;
 
                     const auto b2x2 = b2 * static_cast<float_type>(x * x);
 
