@@ -3,7 +3,7 @@
 
 #include "mglass/shape.h"   // Shape
 #include <utility>          // std::forward
-#include <algorithm>        // std::min, std::clamp
+#include <algorithm>        // std::clamp
 
 
 namespace mglass::shapes
@@ -101,7 +101,7 @@ namespace mglass::shapes
 
                         (void)std::forward<ConsumerFunctor>(consumer)(
                             { xUnaligned, yUnaligned },
-                            std::clamp(pointDensity * pointDensity, 0.5_flt, 1_flt)
+                            std::clamp(pointDensity * pointDensity, 0.25_flt, 1_flt)
                         );
                     }
                 }
