@@ -3,7 +3,7 @@
 
 #include <cstdint>      // std::int32_t
 #include <cstddef>      // std::size_t
-#include <type_traits>  // std::is_arithmetic_v, std::is_same_v, std::enable_if_t
+#include <type_traits>  // std::is_arithmetic_v, std::is_same_v
 
 namespace mglass
 {
@@ -17,6 +17,15 @@ namespace mglass
     using size_type  = std::size_t;
     using int_type   = std::int32_t;
     using float_type = float;
+
+
+    namespace literals
+    {
+        constexpr size_type operator""_szt(unsigned long long v) { return v; }
+        constexpr int_type operator""_intt(unsigned long long v) { return v; }
+        constexpr float_type operator""_flt(long double v) { return v; }
+        constexpr float_type operator""_flt(unsigned long long v) { return v; }
+    }
 
 
     template<typename Numerical>

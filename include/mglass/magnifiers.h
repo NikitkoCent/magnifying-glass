@@ -89,7 +89,7 @@ namespace mglass::magnifiers
                 if ((pixelStart.x >= imageSrc.getWidth()) || (pixelStart.y >= imageSrc.getHeight()))
                     return;
 
-                const auto srcPixel = obtainSrcPixel(pixelStart, pixelStartFloat, srcPointFloat);
+                const auto srcPixel = obtainSrcPixel(pixelStart, pixelStartFloat, srcPointFloat, pixelInsidePart);
 
                 assert( (rasterizePoint.x >= shapeIntegralBounds.topLeft.x) );
                 assert( (rasterizePoint.y <= shapeIntegralBounds.topLeft.y) );
@@ -107,16 +107,26 @@ namespace mglass::magnifiers
             [[nodiscard]] ARGB obtainSrcPixel(
                 const Point<size_type> pixelPos,
                 [[maybe_unused]] const Point<float_type> pixelPosFloat,
-                [[maybe_unused]] const Point<float_type> point) const
+                [[maybe_unused]] const Point<float_type> point,
+                [[maybe_unused]] float pixelInsidePart) const
             {
+                ARGB result;
+
                 if constexpr (EnableInterpolation)
                 {
-                    return InterpolationInfo::calculateFor(point, pixelPosFloat).applyTo(pixelPos, imageSrc);
+                    result = InterpolationInfo::calculateFor(point, pixelPosFloat).applyTo(pixelPos, imageSrc);
                 }
                 else
                 {
-                    return imageSrc.getPixelAt(pixelPos.x, pixelPos.y);
+                    result = imageSrc.getPixelAt(pixelPos.x, pixelPos.y);
                 }
+
+                if constexpr (EnableAlphaBlending)
+                {
+                    result.a = static_cast<std::uint8_t>(static_cast<float_type>(result.a) * pixelInsidePart);
+                }
+
+                return result;
             }
         };
 
@@ -169,9 +179,9 @@ namespace mglass::magnifiers
         const bool enableAlphaBlending = false)
     {
         if (enableAlphaBlending)
-            return detail::nearestNeighbor<true, false>(shape, scaleFactor, imageSrc, imageTopLeft, imageDst);
+            detail::nearestNeighbor<true, false>(shape, scaleFactor, imageSrc, imageTopLeft, imageDst);
         else
-            return detail::nearestNeighbor<false, false>(shape, scaleFactor, imageSrc, imageTopLeft, imageDst);
+            detail::nearestNeighbor<false, false>(shape, scaleFactor, imageSrc, imageTopLeft, imageDst);
     }
 
     // `imageDst` will have size is getShapeIntegralBounds(`shape`).width x getShapeIntegralBounds(`shape`).height
@@ -188,9 +198,9 @@ namespace mglass::magnifiers
         const bool enableAlphaBlending = false)
     {
         if (enableAlphaBlending)
-            return detail::nearestNeighbor<true, true>(shape, scaleFactor, imageSrc, imageTopLeft, imageDst);
+            detail::nearestNeighbor<true, true>(shape, scaleFactor, imageSrc, imageTopLeft, imageDst);
         else
-            return detail::nearestNeighbor<false, true>(shape, scaleFactor, imageSrc, imageTopLeft, imageDst);
+            detail::nearestNeighbor<false, true>(shape, scaleFactor, imageSrc, imageTopLeft, imageDst);
     }
 } // namespace mglass::magnifiers
 

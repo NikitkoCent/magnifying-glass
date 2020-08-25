@@ -59,7 +59,6 @@ namespace mglass::shapes
             {
                 for (int_type x = xStart; x < xEnd; ++x)
                 {
-                    // TODO: compute the second parameter of the consumer
                     (void)std::forward<ConsumerFunctor>(consumer)({x, y}, 1);
                 }
             }
