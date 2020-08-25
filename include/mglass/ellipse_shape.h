@@ -3,7 +3,7 @@
 
 #include "mglass/shape.h"   // Shape
 #include <utility>          // std::forward
-#include <algorithm>        // std::min
+#include <algorithm>        // std::min, std::clamp
 
 
 namespace mglass::shapes
@@ -97,9 +97,11 @@ namespace mglass::shapes
 
                     if (b2x2 <= rightPart)
                     {
+                        const float_type pointDensity = 1.8_flt - b2x2 / rightPart;
+
                         (void)std::forward<ConsumerFunctor>(consumer)(
                             { xUnaligned, yUnaligned },
-                            (std::min)(rightPart - b2x2 + 0.5_flt, 1_flt)
+                            std::clamp(pointDensity * pointDensity, 0.5_flt, 1_flt)
                         );
                     }
                 }
