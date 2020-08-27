@@ -78,7 +78,7 @@ namespace mglass
         using RasterizationContext = RasterizationContextT;
         static_assert(
             detail::rasterizationContextIsDerivedFromBase( static_cast<RasterizationContext*>(nullptr) ),
-            "RasterizationContext must be derived from mglass::RasterizationContextBase.");
+            "RasterizationContext must be derived from mglass::RasterizationContextBase");
 
 
         // returns a bounding box of the Shape
@@ -87,7 +87,11 @@ namespace mglass
             return static_cast<const Derived*>(this)->getBoundsImpl();
         }
 
-        // TODO: add docs
+        // rasterizes this shape onto the area described by `rect`
+        // `consumer` will be invoked on each rasterized point.
+        //  It must be invocable by object of RasterizationContext type.
+        // RasterizationContext::getRasterizedPoint will return coordinates of the pixel onto which a shape's point was rasterized.
+        // Returned values of the `consumer` will be ignored.
         template<typename ConsumerFunctor>
         void rasterizeOnto(const IntegralRectArea& rect, ConsumerFunctor&& consumer) const
         {
