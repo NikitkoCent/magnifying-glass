@@ -103,11 +103,13 @@ namespace mglass::shapes
 
                     if (x2 <= rightPart)
                     {
-                        const float_type pointDensity = 1.8_flt - x2 / rightPart;
+                        float_type pointDensity = 1 - (x2 / a2 + y2 / b2);
+                        pointDensity = 2_flt - 1_flt / (pointDensity + 0.5_flt);
+                        pointDensity = std::clamp(pointDensity, 0_flt, 1_flt);
 
                         (void)std::forward<ConsumerFunctor>(consumer)(
                             { xUnaligned, yUnaligned },
-                            std::clamp(pointDensity * pointDensity, 0.25_flt, 1_flt)
+                            pointDensity
                         );
                     }
                 }
