@@ -55,6 +55,7 @@ namespace mglass::shapes
 
             // a^2 == (xAxisLength_ / 2) ^ 2
             const auto a2 = (xAxisLength_ * xAxisLength_) / 4;
+            const auto a2Inversed = 1_flt / a2;
             // b^2 == (yAxisLength_ / 2) ^ 2
             const auto b2 = (yAxisLength_ * yAxisLength_) / 4;
             const auto b2Inversed = 1_flt / b2;
@@ -87,8 +88,9 @@ namespace mglass::shapes
                 // +0.5 is for moving to the pixel's center
                 const float_type y = (static_cast<float_type>(yUnaligned) + 0.5_flt) - center_.y;
                 const float_type y2 = y * y;
+                const float_type y2divb2 = y2 * b2Inversed;
 
-                const float_type rightPart = a2 * b2Inversed * (b2 - y2);
+                const float_type rightPart = a2 - a2 * y2divb2;
 
                 for (int_type xUnaligned = xStart; xUnaligned < xEnd; ++xUnaligned)
                 {
@@ -103,9 +105,8 @@ namespace mglass::shapes
 
                     if (x2 <= rightPart)
                     {
-                        float_type pointDensity = 1 - (x2 / a2 + y2 / b2);
-                        pointDensity = 2_flt - 1_flt / (pointDensity + 0.5_flt);
-                        pointDensity = std::clamp(pointDensity, 0_flt, 1_flt);
+                        float_type pointDensity = x2 * a2Inversed + y2divb2;
+                        pointDensity = 1_flt - (pointDensity * pointDensity) * (pointDensity * pointDensity);
 
                         (void)std::forward<ConsumerFunctor>(consumer)(
                             { xUnaligned, yUnaligned },
