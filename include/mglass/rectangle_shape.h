@@ -8,9 +8,37 @@
 
 namespace mglass::shapes
 {
-    class Rectangle : public Shape<Rectangle>
+    namespace detail
     {
-        friend struct Shape<Rectangle>;
+        class RectangleRastrContext final : public RasterizationContextBase<RectangleRastrContext>
+        {
+            // for accessing to getRasterizedPointImpl(), getPixelDensityImpl() from base
+            friend struct RasterizationContextBase<RectangleRastrContext>;
+
+        public:
+            RectangleRastrContext(Point<int_type> rasterizedPoint, float_type pixelDensity) noexcept
+                : rasterizedPoint_(rasterizedPoint)
+                , pixelDensity_(pixelDensity)
+            {}
+
+        private: // RasterizationContextBase<RectangleRastrContext> implementation
+            Point<int_type> getRasterizedPointImpl() const noexcept { return rasterizedPoint_; }
+
+            float_type getPixelDensityImpl() const noexcept
+            {
+                return pixelDensity_;
+            }
+
+        private:
+            Point<int_type> rasterizedPoint_;
+            float_type pixelDensity_;
+        };
+    } // namespace detail
+
+
+    class Rectangle : public Shape<Rectangle, detail::RectangleRastrContext>
+    {
+        friend struct Shape<Rectangle, detail::RectangleRastrContext>;
 
     public: // ctors/dtor
         explicit Rectangle(
@@ -59,7 +87,9 @@ namespace mglass::shapes
             {
                 for (int_type x = xStart; x < xEnd; ++x)
                 {
-                    (void)std::forward<ConsumerFunctor>(consumer)({x, y}, 1);
+                    (void)std::forward<ConsumerFunctor>(consumer)(
+                        detail::RectangleRastrContext{ {x, y}, 1 }
+                    );
                 }
             }
         }

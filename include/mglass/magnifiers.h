@@ -55,7 +55,6 @@ namespace mglass::magnifiers
         // This functor receives coordinates of the point rasterized by a shape
         //  and transforms its coordinates to coordinates on the `imageSrc`.
         // Optionally performs alpha-blending and anti-aliasing according to template flags.
-        // TODO: alpha blending
         template<bool EnableAlphaBlending, bool EnableInterpolation>
         struct RasterizationConsumer
         {
@@ -67,8 +66,11 @@ namespace mglass::magnifiers
             const IntegralRectArea shapeIntegralBounds;
 
 
-            void operator()(const Point<int_type> rasterizePoint, [[maybe_unused]] float pixelInsidePart) const
+            template<typename Impl>
+            void operator()(const RasterizationContextBase<Impl>& rastrCtx) const
             {
+                const auto rasterizePoint = rastrCtx.getRasterizedPoint();
+
                 const Point<float_type> srcPointFloat = detail::scaleVectorBy(
                     scaleFactor,
                     scaleCenter,
@@ -89,7 +91,7 @@ namespace mglass::magnifiers
                 if ((pixelStart.x >= imageSrc.getWidth()) || (pixelStart.y >= imageSrc.getHeight()))
                     return;
 
-                const auto srcPixel = obtainSrcPixel(pixelStart, pixelStartFloat, srcPointFloat, pixelInsidePart);
+                const auto srcPixel = obtainSrcPixel(pixelStart, pixelStartFloat, srcPointFloat, rastrCtx);
 
                 assert( (rasterizePoint.x >= shapeIntegralBounds.topLeft.x) );
                 assert( (rasterizePoint.y <= shapeIntegralBounds.topLeft.y) );
@@ -104,11 +106,12 @@ namespace mglass::magnifiers
             }
 
         private:
+            template<typename Impl>
             [[nodiscard]] ARGB obtainSrcPixel(
                 const Point<size_type> pixelPos,
                 [[maybe_unused]] const Point<float_type> pixelPosFloat,
                 [[maybe_unused]] const Point<float_type> point,
-                [[maybe_unused]] float pixelInsidePart) const
+                [[maybe_unused]] const RasterizationContextBase<Impl>& rastrCtx) const
             {
                 ARGB result;
 
@@ -123,7 +126,7 @@ namespace mglass::magnifiers
 
                 if constexpr (EnableAlphaBlending)
                 {
-                    result.a = static_cast<std::uint8_t>(static_cast<float_type>(result.a) * pixelInsidePart);
+                    result.a = static_cast<std::uint8_t>(static_cast<float_type>(result.a) * rastrCtx.getPixelDensity());
                 }
 
                 return result;
@@ -131,9 +134,9 @@ namespace mglass::magnifiers
         };
 
 
-        template<bool EnableAlphaBlending, bool EnableInterpolating, typename ShapeImpl>
+        template<bool EnableAlphaBlending, bool EnableInterpolating, typename ShapeImpl, typename RastrCtx>
         void nearestNeighbor(
-            const Shape<ShapeImpl>& shape,
+            const Shape<ShapeImpl, RastrCtx>& shape,
             float_type scaleFactor,
             const Image& imageSrc,
             Point<int_type> imageTopLeft,
@@ -169,9 +172,9 @@ namespace mglass::magnifiers
     // if `imageSrc` and `imageDst` point to the same object, behaviour is undefined
     //
     // TODO: more detailed documentation
-    template<typename ShapeImpl>
+    template<typename ShapeImpl, typename RastrCtx>
     void nearestNeighbor(
-        const Shape<ShapeImpl>& shape,
+        const Shape<ShapeImpl, RastrCtx>& shape,
         const float_type scaleFactor,
         const Image& imageSrc,
         const Point<int_type> imageTopLeft,
@@ -188,9 +191,9 @@ namespace mglass::magnifiers
     // if `imageSrc` and `imageDst` point to the same object, behaviour is undefined
     //
     // TODO: more detailed documentation
-    template<typename ShapeImpl>
+    template<typename ShapeImpl, typename RastrCtx>
     void nearestNeighborInterpolated(
-        const Shape<ShapeImpl>& shape,
+        const Shape<ShapeImpl, RastrCtx>& shape,
         const float_type scaleFactor,
         const Image& imageSrc,
         const Point<int_type> imageTopLeft,

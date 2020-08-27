@@ -12,15 +12,75 @@ namespace mglass
     using ShapeRectArea = RectArea<float_type>;
 
 
+    // The RasterizationContextBase interface provides definitions for information
+    //  about point rasterized onto some pixel (it is used at Shape::rasterizeOnto)
+    //
+    // Probably there is no need for CRTP, it is used to explicit define the interface.
+    // It should be replaced by C++20 concepts, but we don't have compilers support C++20 well yet.
+    // Another way is to make some traits like is_shape<T> but it is less-readable.
+    template<typename Derived>
+    struct RasterizationContextBase
+    {
+        // Returns coordinates of the pixel onto which the point was rasterized.
+        [[nodiscard]] Point<int_type> getRasterizedPoint() const noexcept
+        {
+            return static_cast<const Derived*>(this)->getRasterizedPointImpl();
+        }
+
+        // Returns density of the pixel retrieved by getRasterizedPoint() method.
+        // Returned value must be inside the range [0; 1].
+        // Pixels closer to the edges of the shape should have less value of the density.
+        [[nodiscard]] float_type getPixelDensity() const noexcept
+        {
+            return static_cast<const Derived*>(this)->getPixelDensityImpl();
+        }
+
+    protected: // crtp methods implementation
+        [[noreturn]] Point<int_type> getRasterizedPointImpl() const noexcept
+        {
+            static_assert(detail::dependent_false_v<Derived>, "is not implemented");
+        }
+
+        [[noreturn]] float_type getPixelDensityImpl() const noexcept
+        {
+            static_assert(detail::dependent_false_v<Derived>, "is not implemented");
+        }
+
+    protected:
+        // dtor will not be invoked by the library
+        ~RasterizationContextBase() noexcept = default;
+    };
+
+
+    namespace detail
+    {
+        template<typename T>
+        constexpr bool rasterizationContextIsDerivedFromBase(RasterizationContextBase<T>*)
+        {
+            return true;
+        }
+
+        constexpr bool rasterizationContextIsDerivedFromBase(...)
+        {
+            return false;
+        }
+    } // namespace detail
+
+
     // The Shape interface provides definitions for objects that represent some form of magnifying glass
     //  (e.g. rectangle or ellipse magnifying glass).
     //
-    // Probably there is no need for CRTP. It should be replaced by C++20 concepts
-    //  but we don't have compilers support C++20 well yet.
-    // Another way is to make some traits like is_shape<T> but it is less-readable.
-    template<typename Derived>
+    // As in the case of RasterizationContextBase there is no real need for CRTP.
+    // It should be replaced by C++20 concepts or traits.
+    template<typename Derived, typename RasterizationContextT>
     struct Shape
     {
+        using RasterizationContext = RasterizationContextT;
+        static_assert(
+            detail::rasterizationContextIsDerivedFromBase( static_cast<RasterizationContext*>(nullptr) ),
+            "RasterizationContext must be derived from mglass::RasterizationContextBase.");
+
+
         // returns a bounding box of the Shape
         [[nodiscard]] ShapeRectArea getBounds() const
         {
@@ -32,8 +92,8 @@ namespace mglass
         void rasterizeOnto(const IntegralRectArea& rect, ConsumerFunctor&& consumer) const
         {
             static_assert(
-                std::is_invocable_v<ConsumerFunctor, Point<int_type>, float_type>,
-                "ConsumerFunctor must be invocable with the arguments (Point<int_type>, float_type)"
+                std::is_invocable_v<ConsumerFunctor, RasterizationContext>,
+                "ConsumerFunctor must be invocable with the arguments (RasterizationContext)"
             );
 
             static_cast<const Derived*>(this)->rasterizeOntoImpl(rect, std::forward<ConsumerFunctor>(consumer));
@@ -46,14 +106,13 @@ namespace mglass
         ~Shape() noexcept = default;
 
     protected: // crtp methods implementation
-        [[nodiscard]] ShapeRectArea getBoundsImpl() const
+        [[noreturn]] ShapeRectArea getBoundsImpl() const
         {
             static_assert(detail::dependent_false_v<Derived>, "is not implemented");
-            return {};
         }
 
         template<typename ConsumerFunctor>
-        void rasterizeOntoImpl(
+        [[noreturn]] void rasterizeOntoImpl(
             [[maybe_unused]] IntegralRectArea rect,
             [[maybe_unused]] ConsumerFunctor&& consumer) const
         {
@@ -62,8 +121,8 @@ namespace mglass
     };
 
 
-    template<typename Impl>
-    IntegralRectArea getShapeIntegralBounds(const Shape<Impl>& shape)
+    template<typename Impl, typename Ctx>
+    IntegralRectArea getShapeIntegralBounds(const Shape<Impl, Ctx>& shape)
     {
         const auto preciseBounds = shape.getBounds();
 

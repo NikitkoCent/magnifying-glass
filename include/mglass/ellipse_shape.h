@@ -8,9 +8,49 @@
 
 namespace mglass::shapes
 {
-    class Ellipse : public Shape<Ellipse>
+    namespace detail
     {
-        friend struct Shape<Ellipse>;
+        class EllipseRastrContext final : public RasterizationContextBase<EllipseRastrContext>
+        {
+            // for accessing to getRasterizedPointImpl(), getPixelDensityImpl() from base
+            friend struct RasterizationContextBase<EllipseRastrContext>;
+
+        public:
+            EllipseRastrContext(
+                Point<int_type> rasterizedPoint,
+                float_type x2,
+                float_type a2Inversed,
+                float_type y2divb2
+            ) noexcept
+                : rasterizedPoint_(rasterizedPoint)
+                , x2_(x2)
+                , a2Inversed_(a2Inversed)
+                , y2divb2_(y2divb2)
+            {}
+
+        private: // RasterizationContextBase<EllipseRastrContext> implementation
+            Point<int_type> getRasterizedPointImpl() const noexcept { return rasterizedPoint_; }
+
+            float_type getPixelDensityImpl() const noexcept
+            {
+                using namespace literals;
+
+                const float_type result = x2_ * a2Inversed_ + y2divb2_;
+                return 1_flt - (result * result) * (result * result);
+            }
+
+        private:
+            Point<int_type> rasterizedPoint_;
+            float_type x2_;
+            float_type a2Inversed_;
+            float_type y2divb2_;
+        };
+    } // namespace detail
+
+
+    class Ellipse : public Shape<Ellipse, detail::EllipseRastrContext>
+    {
+        friend struct Shape<Ellipse, detail::EllipseRastrContext>;
 
     public: // ctors/dtor
         explicit Ellipse(
@@ -109,8 +149,7 @@ namespace mglass::shapes
                         pointDensity = 1_flt - (pointDensity * pointDensity) * (pointDensity * pointDensity);
 
                         (void)std::forward<ConsumerFunctor>(consumer)(
-                            { xUnaligned, yUnaligned },
-                            pointDensity
+                            detail::EllipseRastrContext{ { xUnaligned, yUnaligned }, x2, a2Inversed, y2divb2 }
                         );
                     }
                 }
