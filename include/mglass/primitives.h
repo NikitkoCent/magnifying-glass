@@ -21,10 +21,10 @@ namespace mglass
 
     namespace literals
     {
-        constexpr size_type operator""_szt(unsigned long long v) { return v; }
-        constexpr int_type operator""_intt(unsigned long long v) { return v; }
-        constexpr float_type operator""_flt(long double v) { return v; }
-        constexpr float_type operator""_flt(unsigned long long v) { return v; }
+        constexpr size_type operator""_szt(unsigned long long v)  { return static_cast<size_type>(v);  }
+        constexpr int_type operator""_intt(unsigned long long v)  { return static_cast<int_type>(v);   }
+        constexpr float_type operator""_flt(long double v)        { return static_cast<float_type>(v); }
+        constexpr float_type operator""_flt(unsigned long long v) { return static_cast<float_type>(v); }
     }
 
 
