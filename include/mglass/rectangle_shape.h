@@ -4,6 +4,7 @@
 #include "mglass/shape.h"
 #include <utility>              // std::forward
 #include <algorithm>            // std::min, std::max
+#include <cassert>              // assert
 
 
 namespace mglass::shapes
@@ -16,9 +17,15 @@ namespace mglass::shapes
             friend struct RasterizationContextBase<RectangleRastrContext>;
 
         public:
-            RectangleRastrContext(Point<int_type> rasterizedPoint, float_type pixelDensity) noexcept
+            RectangleRastrContext(
+                Point<int_type> rasterizedPoint,
+                Point<float_type> rectCenter,
+                float_type rectWidth,
+                float_type rectHeight) noexcept
                 : rasterizedPoint_(rasterizedPoint)
-                , pixelDensity_(pixelDensity)
+                , rectCenter_(rectCenter)
+                , rectWidth_(rectWidth)
+                , rectHeight_(rectHeight)
             {}
 
         private: // RasterizationContextBase<RectangleRastrContext> implementation
@@ -26,12 +33,26 @@ namespace mglass::shapes
 
             float_type getPixelDensityImpl() const noexcept
             {
-                return pixelDensity_;
+                using namespace mglass::literals;
+
+                auto [x, y] = pointCast<float_type>(rasterizedPoint_);
+                x -= rectCenter_.x;
+                y -= rectCenter_.y;
+
+                const auto relXLength = 1_flt - 2_flt * std::abs(x) / rectWidth_;
+                const auto relYLength = 1_flt - 2_flt * std::abs(y) / rectHeight_;
+
+                assert( ((relXLength >= 0_flt) && (relXLength <= 1_flt)) );
+                assert( ((relYLength >= 0_flt) && (relYLength <= 1_flt)) );
+
+                return std::pow(relXLength * relYLength, 1_flt / 5_flt);
             }
 
         private:
             Point<int_type> rasterizedPoint_;
-            float_type pixelDensity_;
+            Point<float_type> rectCenter_;
+            float_type rectWidth_;
+            float_type rectHeight_;
         };
     } // namespace detail
 
@@ -88,7 +109,7 @@ namespace mglass::shapes
                 for (int_type x = xStart; x < xEnd; ++x)
                 {
                     (void)std::forward<ConsumerFunctor>(consumer)(
-                        detail::RectangleRastrContext{ {x, y}, 1 }
+                        detail::RectangleRastrContext{ {x, y}, center_, width_, height_ }
                     );
                 }
             }
