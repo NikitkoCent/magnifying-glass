@@ -18,6 +18,16 @@ namespace mglass
         , height_(width_ > 0 ? height : 0)
     {}
 
+    Image::Image(Image&& other) noexcept
+        : data_(std::move(other.data_))
+        , width_(other.width_)
+        , height_(other.height_)
+
+    {
+        other.width_ = 0;
+        other.height_ = 0;
+    }
+
 
     Image Image::fromPNGStream(std::istream& stream) noexcept(false)
     {
@@ -93,6 +103,23 @@ namespace mglass
     }
 
 
+    Image& Image::operator=(Image&& rhs) noexcept
+    {
+        if (this != &rhs)
+        {
+            data_ = std::move(rhs.data_);
+
+            width_ = rhs.width_;
+            rhs.width_ = 0;
+
+            height_ = rhs.height_;
+            rhs.height_ = 0;
+        }
+
+        return *this;
+    }
+
+
     void Image::setSize(size_type newWidth, size_type newHeight)
     {
         width_ = newWidth;
@@ -115,6 +142,17 @@ namespace mglass
     {
         for (ARGB& pixel : data_)
             pixel = color;
+    }
+
+
+    bool Image::operator==(const Image& rhs) const noexcept
+    {
+        return ((width_ == rhs.width_) && (height_ == rhs.height_) && (data_ == rhs.data_));
+    }
+
+    bool Image::operator!=(const Image& rhs) const noexcept
+    {
+        return (!(*this == rhs));
     }
 
 

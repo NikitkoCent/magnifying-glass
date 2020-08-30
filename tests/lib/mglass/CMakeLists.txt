@@ -1,8 +1,20 @@
 find_package(Threads)
 
-add_executable(mglasstests tests.cpp)
+add_executable(mglasstests
+               "image_tests.cpp"
+               "tests.cpp"
+               "${magnifying-glass_SOURCE_DIR}/tests/resources/lenna_data.h"
+               "${magnifying-glass_SOURCE_DIR}/tests/resources/lenna_data.cpp")
 
-target_link_libraries(mglasstests gtest gmock_main Threads::Threads)
+target_include_directories(mglasstests
+                           PRIVATE "${magnifying-glass_SOURCE_DIR}/tests")
 
-add_test(NAME mglasstests_all COMMAND mglasstests)
+target_link_libraries(mglasstests
+                      mglass
+                      gtest_main
+                      Threads::Threads)
+
+add_test(NAME mglasstests_all
+         COMMAND "mglasstests"
+         WORKING_DIRECTORY "${magnifying-glass_SOURCE_DIR}/tests")
 # add_test(NAME test_name COMMAND mglasstests --gtest_filter=<FILTER-MASK>)
