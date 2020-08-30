@@ -42,6 +42,18 @@ namespace mglass
     template<typename T>
     Point(T, T) -> Point<T>;
 
+    template<typename T>
+    constexpr bool operator==(Point<T> lhs, Point<T> rhs)
+    {
+        return ((lhs.x == rhs.x) && (lhs.y == rhs.y));
+    }
+
+    template<typename T>
+    constexpr bool operator!=(Point<T> lhs, Point<T> rhs)
+    {
+        return (!(lhs == rhs));
+    }
+
 
     template<typename To, typename From>
     Point<To> pointCast(const Point<From> point)
@@ -115,6 +127,18 @@ namespace mglass
 
     template<typename CoordinateT, typename SizeT>
     RectArea(Point<CoordinateT>, SizeT, SizeT) -> RectArea<CoordinateT, SizeT>;
+
+    template<typename CoordinateT, typename SizeT>
+    constexpr bool operator==(const RectArea<CoordinateT, SizeT>& lhs, const RectArea<CoordinateT, SizeT>& rhs)
+    {
+        return ((lhs.topLeft == rhs.topLeft) && (lhs.width == rhs.width) && (lhs.height == rhs.height));
+    }
+
+    template<typename CoordinateT, typename SizeT>
+    constexpr bool operator!=(const RectArea<CoordinateT, SizeT>& lhs, const RectArea<CoordinateT, SizeT>& rhs)
+    {
+        return (!(lhs == rhs));
+    }
 
 
     using IntegralRectArea = RectArea<int_type, size_type>;

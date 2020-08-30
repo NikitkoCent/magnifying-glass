@@ -3,7 +3,6 @@
 
 #include "mglass/shape.h"   // Shape
 #include <utility>          // std::forward
-#include <algorithm>        // std::clamp
 
 
 namespace mglass::shapes
@@ -53,6 +52,8 @@ namespace mglass::shapes
         friend struct Shape<Ellipse, detail::EllipseRastrContext>;
 
     public: // ctors/dtor
+        // if xAxis is not inside the range [0; +inf) or yAxis is not inside the range [0; +inf),
+        //  behaviour of other methods is undefined
         explicit Ellipse(
             Point<float_type> center = {0, 0},
             float_type xAxis = 0,

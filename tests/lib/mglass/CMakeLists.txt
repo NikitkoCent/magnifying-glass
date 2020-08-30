@@ -2,7 +2,7 @@ find_package(Threads)
 
 add_executable(mglasstests
                "image_tests.cpp"
-               "tests.cpp"
+               "ellipse_shape_tests.cpp"
                "${magnifying-glass_SOURCE_DIR}/tests/resources/lenna_data.h"
                "${magnifying-glass_SOURCE_DIR}/tests/resources/lenna_data.cpp")
 
@@ -11,7 +11,8 @@ target_include_directories(mglasstests
 
 target_link_libraries(mglasstests
                       mglass
-                      gtest_main
+                      gtest
+                      gmock_main
                       Threads::Threads)
 
 add_test(NAME mglasstests_all
