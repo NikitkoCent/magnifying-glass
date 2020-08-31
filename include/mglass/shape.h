@@ -128,10 +128,10 @@ namespace mglass
     template<typename Impl, typename Ctx>
     IntegralRectArea getShapeIntegralBounds(const Shape<Impl, Ctx>& shape)
     {
-        const auto preciseBounds = shape.getBounds();
+        const ShapeRectArea preciseBounds = shape.getBounds();
 
-        const auto bottomRightX = static_cast<int_type>(std::ceil(preciseBounds.topLeft.x + preciseBounds.width)) - 1;
-        const auto bottomRightY = static_cast<int_type>(std::floor(preciseBounds.topLeft.y - preciseBounds.height)) + 1;
+        const auto bottomRightX = static_cast<int_type>(std::ceil(preciseBounds.topLeft.x + preciseBounds.width));
+        const auto bottomRightY = static_cast<int_type>(std::floor(preciseBounds.topLeft.y - preciseBounds.height));
 
         IntegralRectArea result;
 

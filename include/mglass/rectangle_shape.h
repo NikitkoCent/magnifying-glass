@@ -80,9 +80,12 @@ namespace mglass::shapes
         template<typename ConsumerFunctor>
         void rasterizeOntoImpl(IntegralRectArea rect, ConsumerFunctor&& consumer) const
         {
+            using literals::operator""_flt;
+
             if ((rect.width < 1) || (rect.height < 1))
                 return;
 
+            const ShapeRectArea thisPreciseBounds = getBounds();
             const IntegralRectArea thisIntegralBounds = getShapeIntegralBounds(*this);
             if ((thisIntegralBounds.width < 1) || (thisIntegralBounds.height < 1))
                 return;
@@ -95,14 +98,42 @@ namespace mglass::shapes
             const int_type thisBottomRightY =
                 thisIntegralBounds.topLeft.y - static_cast<int_type>(thisIntegralBounds.height - 1);
 
-            const int_type xStart = (std::max)(rect.topLeft.x, thisIntegralBounds.topLeft.x);
-            const int_type xEnd = (std::min)(rectBottomRightX, thisBottomRightX) + 1;
+            const int_type xStart = [&rect, &thisPreciseBounds, &thisIntegralBounds]{
+                int_type result = (std::max)(rect.topLeft.x, thisIntegralBounds.topLeft.x);
+                if ( (static_cast<float_type>(result) + 0.5_flt) < (thisPreciseBounds.topLeft.x) )
+                    ++result;
+                return result;
+            }();
+            const int_type xEnd = [&thisPreciseBounds, rectBottomRightX, thisBottomRightX]{
+                int_type result = (std::min)(rectBottomRightX, thisBottomRightX);
+                const float_type afterRightX = (thisPreciseBounds.topLeft.x + thisPreciseBounds.width);
+                if ( (static_cast<float_type>(result) + 0.5_flt) >= afterRightX)
+                    --result;
+                if ( (static_cast<float_type>(result) + 0.5_flt) >= afterRightX)
+                    --result;
+                return ++result;
+            }();
 
             if (xStart >= xEnd)
                 return;
 
-            const int_type yStart = (std::min)(rect.topLeft.y, thisIntegralBounds.topLeft.y);
-            const int_type yEnd = (std::max)(rectBottomRightY, thisBottomRightY) - 1;
+            const int_type yStart = [&rect, &thisPreciseBounds, &thisIntegralBounds]{
+                int_type result = (std::min)(rect.topLeft.y, thisIntegralBounds.topLeft.y);
+                if ( (static_cast<float_type>(result) + 0.5_flt) > thisPreciseBounds.topLeft.y )
+                    --result;
+                if ( (static_cast<float_type>(result) + 0.5_flt) > thisPreciseBounds.topLeft.y )
+                    --result;
+                return result;
+            }();
+            const int_type yEnd = [&thisPreciseBounds, rectBottomRightY, thisBottomRightY]{
+                int_type result = (std::max)(rectBottomRightY, thisBottomRightY);
+                const float_type beforeBottomY = thisPreciseBounds.topLeft.y - thisPreciseBounds.height;
+                if ( (static_cast<float_type>(result) + 0.5_flt) <= beforeBottomY )
+                    ++result;
+                if ( (static_cast<float_type>(result) + 0.5_flt) <= beforeBottomY )
+                    ++result;
+                return --result;
+            }();
 
             for (int_type y = yStart; y > yEnd; --y)
             {

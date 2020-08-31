@@ -3,6 +3,7 @@ find_package(Threads)
 add_executable(mglasstests
                "image_tests.cpp"
                "ellipse_shape_tests.cpp"
+               "rectangle_shape_tests.cpp"
                "${magnifying-glass_SOURCE_DIR}/tests/resources/lenna_data.h"
                "${magnifying-glass_SOURCE_DIR}/tests/resources/lenna_data.cpp")
 
