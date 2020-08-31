@@ -1,4 +1,4 @@
-#include "mglass/shapes.h"  // mglass::shapes::EllipseShape
+#include "mglass/shapes.h"  // mglass::shapes::Ellipse
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"    // testing::*
 #include <cstddef>          // std::size_t
@@ -215,9 +215,100 @@ TEST(MGLASS_ELLIPSE_SHAPE, RASTERIZE_10_5_ONTO_100_100)
 
     IntPointSet actualPoints;
 
-    e.rasterizeOnto(rasterizeOntoArea, [&actualPoints](const mglass::shapes::Ellipse::RasterizationContext& rstCtx) {
-        actualPoints.emplace(rstCtx.getRasterizedPoint());
-    });
+    e.rasterizeOnto(
+        rasterizeOntoArea,
+        [&actualPoints](const mglass::shapes::Ellipse::RasterizationContext& rstCtx) {
+            actualPoints.emplace(rstCtx.getRasterizedPoint());
+        }
+    );
+
+    ASSERT_THAT(actualPoints, testing::UnorderedElementsAreArray(expectedPoints));
+}
+
+TEST(MGLASS_ELLIPSE_SHAPE, RASTERIZE_10_6_ONTO_100_100)
+{
+    const mglass::shapes::Ellipse e{ {0, 0}, 10, 6};
+
+    const mglass::IntegralRectArea rasterizeOntoArea{
+        {-50, 50},
+        100,
+        100
+    };
+
+    //   minus plus
+    //   5432101234
+    //  ------------
+    // 2|  ******  |
+    // 1| ******** |
+    // 0|**********|
+    //-1|**********|
+    //-2| ******** |
+    //-3|  ******  |
+    //
+    static constexpr IntPoint expectedPoints[] {
+        {-3, -3},
+        {-2, -3},
+        {-1, -3},
+        { 0, -3},
+        { 1, -3},
+        { 2, -3},
+
+        {-4, -2},
+        {-3, -2},
+        {-2, -2},
+        {-1, -2},
+        { 0, -2},
+        { 1, -2},
+        { 2, -2},
+        { 3, -2},
+
+        {-5, -1},
+        {-4, -1},
+        {-3, -1},
+        {-2, -1},
+        {-1, -1},
+        { 0, -1},
+        { 1, -1},
+        { 2, -1},
+        { 3, -1},
+        { 4, -1},
+
+        {-5,  0},
+        {-4,  0},
+        {-3,  0},
+        {-2,  0},
+        {-1,  0},
+        { 0,  0},
+        { 1,  0},
+        { 2,  0},
+        { 3,  0},
+        { 4,  0},
+
+        {-4,  1},
+        {-3,  1},
+        {-2,  1},
+        {-1,  1},
+        { 0,  1},
+        { 1,  1},
+        { 2,  1},
+        { 3,  1},
+
+        {-3, 2},
+        {-2, 2},
+        {-1, 2},
+        { 0, 2},
+        { 1, 2},
+        { 2, 2},
+    };
+
+    IntPointSet actualPoints;
+
+    e.rasterizeOnto(
+        rasterizeOntoArea,
+        [&actualPoints](const mglass::shapes::Ellipse::RasterizationContext& rstCtx) {
+            actualPoints.emplace(rstCtx.getRasterizedPoint());
+        }
+     );
 
     ASSERT_THAT(actualPoints, testing::UnorderedElementsAreArray(expectedPoints));
 }
