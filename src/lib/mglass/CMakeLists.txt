@@ -7,7 +7,6 @@ add_library(mglass STATIC
             "${magnifying-glass_SOURCE_DIR}/include/mglass/ellipse_shape.h"
             "${magnifying-glass_SOURCE_DIR}/include/mglass/rectangle_shape.h"
             "${magnifying-glass_SOURCE_DIR}/include/mglass/magnifiers.h"
-            "mglass.cpp"
             "image.cpp"
             "ellipse_shape.cpp"
             "rectangle_shape.cpp"
