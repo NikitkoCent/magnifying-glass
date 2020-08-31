@@ -43,3 +43,6 @@ cd build
 cmake [-G"<generator>"] -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="<Path/To/Qt>/<version>/<compiler>/lib/cmake" ..
 ```
 See more info in [Qt tutorial](https://doc.qt.io/qt-5/cmake-get-started.html).
+
+## mglass-cli usage
+Run `mglass-cli --help` for usage help.
