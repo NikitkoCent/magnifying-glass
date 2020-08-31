@@ -168,10 +168,12 @@ namespace mglass::magnifiers
     } // namespace detail
 
 
-    // `imageDst` will have size is getShapeIntegralBounds(`shape`).width x getShapeIntegralBounds(`shape`).height
-    // if `imageSrc` and `imageDst` point to the same object, behaviour is undefined
-    //
-    // TODO: more detailed documentation
+    // Scale the area of `imageSrc` bounded by `shape` the `scaleFactor` times.
+    // Result will be written into `imageDst` buffer.
+    // If `enableAlphaBlending` == true edges of the resulting image will be smoothed.
+    // `imageDst` will have size is getShapeIntegralBounds(`shape`).width x getShapeIntegralBounds(`shape`).height.
+    // If `imageSrc` and `imageDst` point to the same object, behavior is undefined.
+    // If `scaleFactor` is not inside the range (0; +inf), behavior is undefined.
     template<typename ShapeImpl, typename RastrCtx>
     void nearestNeighbor(
         const Shape<ShapeImpl, RastrCtx>& shape,
@@ -187,10 +189,13 @@ namespace mglass::magnifiers
             detail::nearestNeighbor<false, false>(shape, scaleFactor, imageSrc, imageTopLeft, imageDst);
     }
 
-    // `imageDst` will have size is getShapeIntegralBounds(`shape`).width x getShapeIntegralBounds(`shape`).height
-    // if `imageSrc` and `imageDst` point to the same object, behaviour is undefined
-    //
-    // TODO: more detailed documentation
+    // Scale the area of `imageSrc` bounded by `shape` the `scaleFactor` times.
+    // This function gives a better image then `nearestNeighbor` but it is slower.
+    // Result will be written into `imageDst` buffer.
+    // If `enableAlphaBlending` == true edges of the resulting image will be smoothed.
+    // `imageDst` will have size is getShapeIntegralBounds(`shape`).width x getShapeIntegralBounds(`shape`).height.
+    // If `imageSrc` and `imageDst` point to the same object, behavior is undefined.
+    // If `scaleFactor` is not inside the range (0; +inf), behavior is undefined.
     template<typename ShapeImpl, typename RastrCtx>
     void nearestNeighborInterpolated(
         const Shape<ShapeImpl, RastrCtx>& shape,
