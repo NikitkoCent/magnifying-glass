@@ -1,0 +1,138 @@
+name: "CI"
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+  pull_request:
+    branches: [master]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+
+  windows-server-2019_msvs-2019:
+    name: "Artifacts and tests; Windows Server 2019, MSVS 2019, Qt 5.14.1, Release+Debug"
+    runs-on: windows-2019
+    steps:
+      - uses: actions/checkout@v2.3.2
+        with:
+          submodules: recursive
+      - uses: jurplel/install-qt-action@v2.8.0
+        with:
+          version: '5.14.1'
+          arch: 'win64_msvc2017_64'
+      - name: Configure
+        run: |
+          cd build
+          cmake -G"Visual Studio 16 2019" -DCMAKE_PREFIX_PATH="$Env:Qt5_DIR" ..
+      - name: Build (Debug)
+        run: |
+          cd build
+          cmake --build . --config Debug
+      - name: Run tests (Debug)
+        run: |
+          cd build
+          ctest -C Debug --verbose
+      - name: Build (Release)
+        run: |
+          cd build
+          cmake --build . --config Release
+      - name: Run tests (Release)
+        run: |
+          cd build
+          ctest -C Release --verbose
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2.1.4
+        with:
+          name: mglass-windows
+          path: |
+            build/src/products/mglass-cli/Release/mglass-cli.exe
+            build/src/products/mglass-gui/Release/
+
+  ubuntu-1604_gcc_840:
+    name: "Artifacts and tests; Ubuntu 16.04, GCC 8.4.0, Qt 5.14.1, Release+Debug"
+    # The type of runner that the job will run on
+    runs-on: ubuntu-16.04
+    steps:
+      - uses: actions/checkout@v2.3.2
+        with:
+          submodules: recursive
+      - uses: jurplel/install-qt-action@v2.8.0
+        with:
+          version: '5.14.1'
+      - name: Install linuxdeployqt
+        run: |
+          wget -c -nv "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
+          chmod a+x linuxdeployqt-continuous-x86_64.AppImage
+          ./linuxdeployqt-continuous-x86_64.AppImage -version
+          echo "::add-path::`pwd`"
+      - name: Build (Debug)
+        run: |
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=gcc-8 -DCMAKE_CXX_COMPILER=g++-8 -DCMAKE_PREFIX_PATH="${Qt5_DIR}" ..
+          cmake --build .
+      - name: Run tests (Debug)
+        run: |
+          cd build
+          ctest -C Debug --verbose
+      - name: Build (Release)
+        run: |
+          cd build
+          rm -rf ./*
+          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=gcc-8 -DCMAKE_CXX_COMPILER=g++-8 -DCMAKE_PREFIX_PATH="${Qt5_DIR}" ..
+          cmake --build .
+      - name: Run tests (Release)
+        run: |
+          cd build
+          ctest -C Release --verbose
+      - name: Pack artifacts
+        run: |
+          cd build/src/products
+          tar -cvf mglass-linux.tar mglass-cli/mglass-cli mglass-gui/mglass-gui.AppDir
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2.1.4
+        with:
+          name: mglass-linux
+          path: |
+            build/src/products/mglass-linux.tar
+
+  macos-1015_clang:
+    name: "Artifacts and tests; macOS Catalina 10.15, Clang, Qt 5.14.1, Release+Debug"
+    # The type of runner that the job will run on
+    runs-on: macos-10.15
+    steps:
+      - uses: actions/checkout@v2.3.2
+        with:
+          submodules: recursive
+      - uses: jurplel/install-qt-action@v2.8.0
+        with:
+          version: '5.14.1'
+      - name: Build (Debug)
+        run: |
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_OSX_DEPLOYMENT_TARGET="10.13.6" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_PREFIX_PATH="${Qt5_DIR}" ..
+          cmake --build .
+      - name: Run tests (Debug)
+        run: |
+          cd build
+          ctest -C Debug --verbose
+      - name: Build (Release)
+        run: |
+          cd build
+          rm -rf ./*
+          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET="10.13.6" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_PREFIX_PATH="${Qt5_DIR}" ..
+          cmake --build .
+      - name: Run tests (Release)
+        run: |
+          cd build
+          ctest -C Release --verbose
+      - name: Pack artifacts
+        run: |
+          cd build/src/products
+          tar -cvf mglass-macos.tar mglass-cli/mglass-cli mglass-gui/mglass-gui.app
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2.1.4
+        with:
+          name: mglass-macos
+          path: |
+            build/src/products/mglass-macos.tar
